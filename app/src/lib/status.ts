@@ -1,4 +1,17 @@
-import type { AlarmSeverity, SystemStatus, WorkOrderPriority, WorkOrderStatus, DoorStatus } from '@/types'
+import type {
+  AlarmSeverity,
+  SystemStatus,
+  WorkOrderPriority,
+  WorkOrderStatus,
+  DoorStatus,
+  UnitOccupancyStatus,
+  InvoiceStatus,
+  VisitorStatus,
+  ParkingSlotStatus,
+  AmenityBookingStatus,
+  ComplaintStatus,
+  ComplaintPriority,
+} from '@/types'
 
 export const statusBadgeVariant: Record<SystemStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   normal: 'secondary',
@@ -52,4 +65,80 @@ export const doorStatusVariant: Record<DoorStatus, 'default' | 'secondary' | 'de
   unlocked: 'outline',
   forced: 'destructive',
   held_open: 'destructive',
+}
+
+export const unitStatusLabel: Record<UnitOccupancyStatus, string> = {
+  occupied_owner: 'Dihuni Pemilik',
+  occupied_tenant: 'Dihuni Penyewa',
+  vacant: 'Kosong',
+  for_sale: 'Dijual',
+}
+
+export const unitStatusVariant: Record<UnitOccupancyStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  occupied_owner: 'secondary',
+  occupied_tenant: 'secondary',
+  vacant: 'outline',
+  for_sale: 'outline',
+}
+
+export const invoiceStatusLabel: Record<InvoiceStatus, string> = {
+  paid: 'Lunas',
+  due: 'Belum Jatuh Tempo',
+  overdue: 'Tertunggak',
+}
+
+export const invoiceStatusVariant: Record<InvoiceStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  paid: 'secondary',
+  due: 'outline',
+  overdue: 'destructive',
+}
+
+export const visitorStatusLabel: Record<VisitorStatus, string> = {
+  checked_in: 'Sedang Berada di Lokasi',
+  checked_out: 'Sudah Keluar',
+  expected: 'Dijadwalkan',
+}
+
+export const visitorStatusVariant: Record<VisitorStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  checked_in: 'secondary',
+  checked_out: 'outline',
+  expected: 'outline',
+}
+
+export const parkingStatusLabel: Record<ParkingSlotStatus, string> = {
+  occupied: 'Terisi',
+  available: 'Tersedia',
+  reserved: 'Dipesan',
+}
+
+export const parkingStatusVariant: Record<ParkingSlotStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  occupied: 'secondary',
+  available: 'outline',
+  reserved: 'outline',
+}
+
+export const amenityStatusLabel: Record<AmenityBookingStatus, string> = {
+  confirmed: 'Terkonfirmasi',
+  pending: 'Menunggu Konfirmasi',
+  cancelled: 'Dibatalkan',
+}
+
+export const amenityStatusVariant: Record<AmenityBookingStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  confirmed: 'secondary',
+  pending: 'outline',
+  cancelled: 'destructive',
+}
+
+export const complaintStatusLabel: Record<ComplaintStatus, string> = {
+  open: 'Baru',
+  in_progress: 'Sedang Ditangani',
+  resolved: 'Selesai',
+  closed: 'Ditutup',
+}
+
+export const complaintPriorityVariant: Record<ComplaintPriority, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  urgent: 'destructive',
+  high: 'destructive',
+  medium: 'outline',
+  low: 'secondary',
 }

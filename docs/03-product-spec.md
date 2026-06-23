@@ -1,11 +1,13 @@
 # Product Spec — SmartBuilding Enterprise BMS (Frontend Demo)
 
 ## Tujuan
-Frontend-only demo enterprise Building Management System (BMS), dibangun dengan
-React + shadcn/ui + Tailwind CSS v4, tanpa backend nyata (semua data adalah mock
-data lokal di `src/data/mock.ts`).
+Frontend-only demo enterprise Building Management System (BMS) untuk **kompleks
+apartemen multi-tower**, dibangun dengan React + shadcn/ui + Tailwind CSS v4,
+tanpa backend nyata (semua data adalah mock data lokal di `src/data/mock.ts`).
 
 ## Modul yang Dibangun
+
+### Operasional Gedung (BMS klasik)
 
 | Modul | Rute | Insight dari Kompetitor |
 |---|---|---|
@@ -15,8 +17,25 @@ data lokal di `src/data/mock.ts`).
 | Alarm & Notifikasi | `/alarms` | Severity + acknowledge workflow (Desigo CC, Honeywell EBI) |
 | Access Control | `/access-control` | Status pintu & log akses (unified security) |
 | Aset & Maintenance | `/maintenance` | Health score & work order (predictive maintenance pattern) |
-| Laporan | `/reports` | Energy vs budget chart + export template (compliance reporting) |
-| Pengguna & Role | `/users` | Role-based access: admin, facility manager, technician, viewer |
+
+### Manajemen Penghuni (khas apartemen/residential — ditambahkan di Request #2)
+
+| Modul | Rute | Kebutuhan Nyata Operator Apartemen |
+|---|---|---|
+| Unit & Penghuni | `/units` | Data unit per tower, status hunian, pemilik/penyewa |
+| Billing & Iuran | `/billing` | Invoice IPL & utilitas, status lunas/jatuh tempo/tertunggak |
+| Visitor Management | `/visitors` | Log tamu masuk/keluar, keperluan, kendaraan |
+| Parking | `/parking` | Status slot parkir mobil/motor, kendaraan terdaftar |
+| Amenity Booking | `/amenities` | Reservasi kolam renang, gym, function hall, BBQ area |
+| Keluhan & Tiket | `/complaints` | Tiket keluhan penghuni dengan prioritas & status |
+| Pengumuman | `/announcements` | Broadcast info ke seluruh kompleks atau per tower |
+
+### Administrasi
+
+| Modul | Rute |
+|---|---|
+| Laporan | `/reports` |
+| Pengguna & Role | `/users` |
 
 ## Tech Stack
 - React 19 + TypeScript + Vite
@@ -33,8 +52,8 @@ app/src/
     ui/             # komponen shadcn (button, card, table, sidebar, dll.)
   data/mock.ts      # seluruh mock data (buildings, hvac, alarms, dll.)
   lib/status.ts     # mapping label & badge variant per status/severity
-  pages/            # 8 halaman modul di atas
-  types/index.ts    # definisi tipe domain BMS
+  pages/            # 15 halaman modul di atas
+  types/index.ts    # definisi tipe domain BMS & residential
 ```
 
 ## Catatan

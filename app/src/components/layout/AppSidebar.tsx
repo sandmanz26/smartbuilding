@@ -8,6 +8,13 @@ import {
   Wrench,
   FileBarChart,
   Users,
+  Home,
+  Receipt,
+  UserCheck,
+  CarFront,
+  CalendarCheck,
+  MessageSquareWarning,
+  Megaphone,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import {
@@ -24,16 +31,48 @@ import {
 } from '@/components/ui/sidebar'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
-const navItems = [
+const operationalItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
   { title: 'Gedung & Lantai', url: '/buildings', icon: Building2 },
   { title: 'HVAC & Energi', url: '/hvac-energy', icon: Thermometer },
   { title: 'Alarm & Notifikasi', url: '/alarms', icon: Bell },
   { title: 'Access Control', url: '/access-control', icon: DoorOpen },
   { title: 'Aset & Maintenance', url: '/maintenance', icon: Wrench },
+]
+
+const residentItems = [
+  { title: 'Unit & Penghuni', url: '/units', icon: Home },
+  { title: 'Billing & Iuran', url: '/billing', icon: Receipt },
+  { title: 'Visitor Management', url: '/visitors', icon: UserCheck },
+  { title: 'Parking', url: '/parking', icon: CarFront },
+  { title: 'Amenity Booking', url: '/amenities', icon: CalendarCheck },
+  { title: 'Keluhan & Tiket', url: '/complaints', icon: MessageSquareWarning },
+  { title: 'Pengumuman', url: '/announcements', icon: Megaphone },
+]
+
+const adminItems = [
   { title: 'Laporan', url: '/reports', icon: FileBarChart },
   { title: 'Pengguna & Role', url: '/users', icon: Users },
 ]
+
+function renderItems(items: typeof operationalItems) {
+  return items.map((item) => (
+    <SidebarMenuItem key={item.title}>
+      <SidebarMenuButton asChild tooltip={item.title}>
+        <NavLink
+          to={item.url}
+          end={item.url === '/'}
+          className={({ isActive }) =>
+            isActive ? 'font-medium text-foreground' : 'text-muted-foreground'
+          }
+        >
+          <item.icon />
+          <span>{item.title}</span>
+        </NavLink>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  ))
+}
 
 export function AppSidebar() {
   return (
@@ -45,32 +84,27 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col leading-none group-data-[collapsible=icon]:hidden">
             <span className="font-semibold">SmartBuilding</span>
-            <span className="text-xs text-muted-foreground">Enterprise BMS</span>
+            <span className="text-xs text-muted-foreground">Apartment BMS</span>
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Operasional</SidebarGroupLabel>
+          <SidebarGroupLabel>Operasional Gedung</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
-                    <NavLink
-                      to={item.url}
-                      end={item.url === '/'}
-                      className={({ isActive }) =>
-                        isActive ? 'font-medium text-foreground' : 'text-muted-foreground'
-                      }
-                    >
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <SidebarMenu>{renderItems(operationalItems)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Manajemen Penghuni</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{renderItems(residentItems)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Administrasi</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{renderItems(adminItems)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

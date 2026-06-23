@@ -8,13 +8,20 @@ import type {
   Asset,
   WorkOrder,
   SystemUser,
+  Unit,
+  Invoice,
+  Visitor,
+  ParkingSlot,
+  AmenityBooking,
+  Complaint,
+  Announcement,
 } from '@/types'
 
 export const buildings: Building[] = [
   {
     id: 'bld-01',
-    name: 'Sudirman Tower',
-    address: 'Jl. Jend. Sudirman Kav. 52-53, Jakarta',
+    name: 'Tower Anggrek',
+    address: 'Jl. Jend. Sudirman Kav. 52-53, Jakarta — Kompleks Apartemen Sudirman Residences',
     floors: 28,
     areaSqm: 42000,
     occupancy: 1840,
@@ -26,8 +33,8 @@ export const buildings: Building[] = [
   },
   {
     id: 'bld-02',
-    name: 'Thamrin Nine Annex',
-    address: 'Jl. M.H. Thamrin No.9, Jakarta',
+    name: 'Tower Bougenville',
+    address: 'Jl. Jend. Sudirman Kav. 52-53, Jakarta — Kompleks Apartemen Sudirman Residences',
     floors: 18,
     areaSqm: 26500,
     occupancy: 980,
@@ -39,8 +46,8 @@ export const buildings: Building[] = [
   },
   {
     id: 'bld-03',
-    name: 'Kuningan Logistics Hub',
-    address: 'Jl. HR Rasuna Said, Jakarta',
+    name: 'Tower Cendana',
+    address: 'Jl. Jend. Sudirman Kav. 52-53, Jakarta — Kompleks Apartemen Sudirman Residences',
     floors: 6,
     areaSqm: 38000,
     occupancy: 320,
@@ -119,4 +126,59 @@ export const users: SystemUser[] = [
   { id: 'usr-02', name: 'Budi Santoso', email: 'budi.santoso@smartbuilding.id', role: 'facility_manager', buildingsAccess: ['bld-01'], lastActive: '2026-06-23T08:10:00', status: 'active' },
   { id: 'usr-03', name: 'Siti Aminah', email: 'siti.aminah@smartbuilding.id', role: 'technician', buildingsAccess: ['bld-01', 'bld-03'], lastActive: '2026-06-23T07:55:00', status: 'active' },
   { id: 'usr-04', name: 'Joko Wibowo', email: 'joko.wibowo@smartbuilding.id', role: 'viewer', buildingsAccess: ['bld-02'], lastActive: '2026-06-20T17:00:00', status: 'suspended' },
+]
+
+export const units: Unit[] = [
+  { id: 'unt-01', buildingId: 'bld-01', unitNumber: 'A-1205', floor: 12, type: '2BR', areaSqm: 65, status: 'occupied_owner', ownerName: 'Andi Wijaya', phone: '0812-1111-2222' },
+  { id: 'unt-02', buildingId: 'bld-01', unitNumber: 'A-1206', floor: 12, type: '2BR', areaSqm: 65, status: 'occupied_tenant', ownerName: 'Lina Marpaung', tenantName: 'Reza Pratama', phone: '0813-2222-3333' },
+  { id: 'unt-03', buildingId: 'bld-01', unitNumber: 'A-2001', floor: 20, type: '3BR Executive', areaSqm: 110, status: 'occupied_owner', ownerName: 'Hendra Gunawan', phone: '0811-3333-4444' },
+  { id: 'unt-04', buildingId: 'bld-01', unitNumber: 'A-0501', floor: 5, type: 'Studio', areaSqm: 32, status: 'vacant', ownerName: 'Developer (Inventory)', phone: '-' },
+  { id: 'unt-05', buildingId: 'bld-02', unitNumber: 'B-0805', floor: 8, type: '1BR', areaSqm: 45, status: 'occupied_tenant', ownerName: 'Maria Susanti', tenantName: 'Kevin Tanaka', phone: '0815-4444-5555' },
+  { id: 'unt-06', buildingId: 'bld-02', unitNumber: 'B-0806', floor: 8, type: '1BR', areaSqm: 45, status: 'for_sale', ownerName: 'Developer (Inventory)', phone: '-' },
+  { id: 'unt-07', buildingId: 'bld-03', unitNumber: 'C-0101', floor: 1, type: '2BR', areaSqm: 60, status: 'occupied_owner', ownerName: 'Dewi Anggraini', phone: '0816-5555-6666' },
+]
+
+export const invoices: Invoice[] = [
+  { id: 'inv-01', unitId: 'unt-01', buildingId: 'bld-01', period: 'Juni 2026', description: 'Iuran Pemeliharaan Lingkungan (IPL)', amount: 1850000, dueDate: '2026-06-10', status: 'paid' },
+  { id: 'inv-02', unitId: 'unt-02', buildingId: 'bld-01', period: 'Juni 2026', description: 'IPL + Air', amount: 2100000, dueDate: '2026-06-10', status: 'overdue' },
+  { id: 'inv-03', unitId: 'unt-03', buildingId: 'bld-01', period: 'Juni 2026', description: 'IPL + Listrik Bersama', amount: 3200000, dueDate: '2026-06-15', status: 'due' },
+  { id: 'inv-04', unitId: 'unt-05', buildingId: 'bld-02', period: 'Juni 2026', description: 'IPL', amount: 1450000, dueDate: '2026-06-10', status: 'paid' },
+  { id: 'inv-05', unitId: 'unt-07', buildingId: 'bld-03', period: 'Juni 2026', description: 'IPL + Air', amount: 1700000, dueDate: '2026-06-05', status: 'overdue' },
+]
+
+export const visitors: Visitor[] = [
+  { id: 'vis-01', buildingId: 'bld-01', unitId: 'unt-01', visitorName: 'Yusuf Rahman', purpose: 'Kunjungan Keluarga', vehiclePlate: 'B 1234 ABC', checkInAt: '2026-06-23T09:15:00', status: 'checked_in' },
+  { id: 'vis-02', buildingId: 'bld-01', unitId: 'unt-02', visitorName: 'Kurir JNE', purpose: 'Pengiriman Paket', checkInAt: '2026-06-23T08:40:00', checkOutAt: '2026-06-23T08:50:00', status: 'checked_out' },
+  { id: 'vis-03', buildingId: 'bld-02', unitId: 'unt-05', visitorName: 'Teknisi AC Panggilan', purpose: 'Servis AC Unit', vehiclePlate: 'B 5566 XYZ', checkInAt: '2026-06-23T10:00:00', status: 'checked_in' },
+  { id: 'vis-04', buildingId: 'bld-03', unitId: 'unt-07', visitorName: 'Tamu Acara Arisan', purpose: 'Acara Pribadi', checkInAt: '2026-06-23T13:00:00', status: 'expected' },
+]
+
+export const parkingSlots: ParkingSlot[] = [
+  { id: 'prk-01', buildingId: 'bld-01', slotCode: 'B1-A01', level: 'Basement 1', vehicleType: 'car', status: 'occupied', unitId: 'unt-01', vehiclePlate: 'B 1001 AGW' },
+  { id: 'prk-02', buildingId: 'bld-01', slotCode: 'B1-A02', level: 'Basement 1', vehicleType: 'car', status: 'available' },
+  { id: 'prk-03', buildingId: 'bld-01', slotCode: 'B1-A03', level: 'Basement 1', vehicleType: 'car', status: 'reserved', unitId: 'unt-03' },
+  { id: 'prk-04', buildingId: 'bld-01', slotCode: 'B2-M10', level: 'Basement 2 (Motor)', vehicleType: 'motorcycle', status: 'occupied', unitId: 'unt-02', vehiclePlate: 'B 2002 PQR' },
+  { id: 'prk-05', buildingId: 'bld-02', slotCode: 'B1-B05', level: 'Basement 1', vehicleType: 'car', status: 'occupied', unitId: 'unt-05', vehiclePlate: 'B 3003 LMN' },
+  { id: 'prk-06', buildingId: 'bld-02', slotCode: 'B1-B06', level: 'Basement 1', vehicleType: 'car', status: 'available' },
+  { id: 'prk-07', buildingId: 'bld-03', slotCode: 'GF-C01', level: 'Ground Floor', vehicleType: 'car', status: 'available' },
+]
+
+export const amenityBookings: AmenityBooking[] = [
+  { id: 'amn-01', buildingId: 'bld-01', amenityName: 'Kolam Renang', unitId: 'unt-01', bookedBy: 'Andi Wijaya', date: '2026-06-23', timeSlot: '07:00 - 08:00', status: 'confirmed' },
+  { id: 'amn-02', buildingId: 'bld-01', amenityName: 'Function Hall', unitId: 'unt-03', bookedBy: 'Hendra Gunawan', date: '2026-06-25', timeSlot: '18:00 - 21:00', status: 'pending' },
+  { id: 'amn-03', buildingId: 'bld-02', amenityName: 'Gym', unitId: 'unt-05', bookedBy: 'Kevin Tanaka', date: '2026-06-23', timeSlot: '17:00 - 18:00', status: 'confirmed' },
+  { id: 'amn-04', buildingId: 'bld-03', amenityName: 'BBQ Area', unitId: 'unt-07', bookedBy: 'Dewi Anggraini', date: '2026-06-24', timeSlot: '16:00 - 19:00', status: 'cancelled' },
+]
+
+export const complaints: Complaint[] = [
+  { id: 'cmp-01', buildingId: 'bld-01', unitId: 'unt-02', reportedBy: 'Reza Pratama', category: 'plumbing', description: 'Kebocoran pipa air di kamar mandi', priority: 'high', status: 'in_progress', createdAt: '2026-06-22T19:00:00', assignee: 'Tim Plumbing A' },
+  { id: 'cmp-02', buildingId: 'bld-01', unitId: 'unt-01', reportedBy: 'Andi Wijaya', category: 'noise', description: 'Suara berisik dari unit tetangga lantai atas', priority: 'medium', status: 'open', createdAt: '2026-06-23T07:30:00' },
+  { id: 'cmp-03', buildingId: 'bld-02', unitId: 'unt-05', reportedBy: 'Kevin Tanaka', category: 'electrical', description: 'Lampu koridor lantai 8 mati', priority: 'low', status: 'resolved', createdAt: '2026-06-20T10:00:00', assignee: 'Tim Elektrikal' },
+  { id: 'cmp-04', buildingId: 'bld-03', unitId: 'unt-07', reportedBy: 'Dewi Anggraini', category: 'security', description: 'Akses kartu lift sering gagal', priority: 'urgent', status: 'open', createdAt: '2026-06-23T06:45:00' },
+]
+
+export const announcements: Announcement[] = [
+  { id: 'ann-01', title: 'Pemeliharaan Tangki Air Bersih', body: 'Akan dilakukan pembersihan tangki air bersih pada 25 Juni 2026 pukul 22:00-02:00. Pasokan air dapat terganggu sementara.', audience: 'all', publishedAt: '2026-06-22T09:00:00', publishedBy: 'Manajemen Gedung' },
+  { id: 'ann-02', title: 'Perbaikan Chiller Tower Anggrek', body: 'Sedang dilakukan perbaikan unit chiller. Suhu AC area lobby & koridor mungkin sedikit lebih hangat dari biasanya.', audience: 'single_building', buildingId: 'bld-01', publishedAt: '2026-06-23T08:00:00', publishedBy: 'Tim Teknik' },
+  { id: 'ann-03', title: 'Jadwal Fogging Nyamuk', body: 'Fogging area taman dan basement akan dilaksanakan 26 Juni 2026 pukul 06:00.', audience: 'all', publishedAt: '2026-06-21T15:00:00', publishedBy: 'Manajemen Gedung' },
 ]
