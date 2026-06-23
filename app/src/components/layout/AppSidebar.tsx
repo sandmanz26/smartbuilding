@@ -15,6 +15,9 @@ import {
   CalendarCheck,
   MessageSquareWarning,
   Megaphone,
+  FileSignature,
+  Gauge,
+  HardHat,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import {
@@ -48,6 +51,12 @@ const residentItems = [
   { title: 'Amenity Booking', url: '/amenities', icon: CalendarCheck },
   { title: 'Keluhan & Tiket', url: '/complaints', icon: MessageSquareWarning },
   { title: 'Pengumuman', url: '/announcements', icon: Megaphone },
+]
+
+const financeVendorItems = [
+  { title: 'Manajemen Sewa', url: '/leases', icon: FileSignature },
+  { title: 'Submetering', url: '/meter-readings', icon: Gauge },
+  { title: 'Vendor & Kontraktor', url: '/vendors', icon: HardHat },
 ]
 
 const adminItems = [
@@ -99,6 +108,12 @@ export function AppSidebar() {
           <SidebarGroupLabel>Manajemen Penghuni</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{renderItems(residentItems)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Keuangan & Vendor</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{renderItems(financeVendorItems)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup>

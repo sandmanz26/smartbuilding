@@ -15,6 +15,9 @@ import type {
   AmenityBooking,
   Complaint,
   Announcement,
+  Lease,
+  MeterReading,
+  Vendor,
 } from '@/types'
 
 export const buildings: Building[] = [
@@ -181,4 +184,26 @@ export const announcements: Announcement[] = [
   { id: 'ann-01', title: 'Pemeliharaan Tangki Air Bersih', body: 'Akan dilakukan pembersihan tangki air bersih pada 25 Juni 2026 pukul 22:00-02:00. Pasokan air dapat terganggu sementara.', audience: 'all', publishedAt: '2026-06-22T09:00:00', publishedBy: 'Manajemen Gedung' },
   { id: 'ann-02', title: 'Perbaikan Chiller Tower Anggrek', body: 'Sedang dilakukan perbaikan unit chiller. Suhu AC area lobby & koridor mungkin sedikit lebih hangat dari biasanya.', audience: 'single_building', buildingId: 'bld-01', publishedAt: '2026-06-23T08:00:00', publishedBy: 'Tim Teknik' },
   { id: 'ann-03', title: 'Jadwal Fogging Nyamuk', body: 'Fogging area taman dan basement akan dilaksanakan 26 Juni 2026 pukul 06:00.', audience: 'all', publishedAt: '2026-06-21T15:00:00', publishedBy: 'Manajemen Gedung' },
+]
+
+export const leases: Lease[] = [
+  { id: 'lse-01', unitId: 'unt-02', buildingId: 'bld-01', tenantName: 'Reza Pratama', tenantPhone: '0813-2222-3333', startDate: '2025-09-01', endDate: '2026-08-31', monthlyRent: 12000000, depositAmount: 24000000, status: 'active' },
+  { id: 'lse-02', unitId: 'unt-05', buildingId: 'bld-02', tenantName: 'Kevin Tanaka', tenantPhone: '0815-4444-5555', startDate: '2025-07-01', endDate: '2026-06-30', monthlyRent: 8500000, depositAmount: 17000000, status: 'ending_soon' },
+  { id: 'lse-03', unitId: 'unt-04', buildingId: 'bld-01', tenantName: 'Mira Lestari (mantan penyewa)', tenantPhone: '0817-6666-7777', startDate: '2024-01-01', endDate: '2024-12-31', monthlyRent: 6000000, depositAmount: 12000000, status: 'expired' },
+]
+
+export const meterReadings: MeterReading[] = [
+  { id: 'mtr-01', unitId: 'unt-01', buildingId: 'bld-01', meterType: 'water', period: 'Juni 2026', previousReading: 120, currentReading: 138, ratePerUnit: 12000 },
+  { id: 'mtr-02', unitId: 'unt-01', buildingId: 'bld-01', meterType: 'electricity', period: 'Juni 2026', previousReading: 4500, currentReading: 4810, ratePerUnit: 1700 },
+  { id: 'mtr-03', unitId: 'unt-02', buildingId: 'bld-01', meterType: 'water', period: 'Juni 2026', previousReading: 95, currentReading: 109, ratePerUnit: 12000 },
+  { id: 'mtr-04', unitId: 'unt-05', buildingId: 'bld-02', meterType: 'electricity', period: 'Juni 2026', previousReading: 3100, currentReading: 3360, ratePerUnit: 1700 },
+  { id: 'mtr-05', unitId: 'unt-07', buildingId: 'bld-03', meterType: 'water', period: 'Juni 2026', previousReading: 60, currentReading: 71, ratePerUnit: 12000 },
+]
+
+export const vendors: Vendor[] = [
+  { id: 'vnd-01', name: 'CV Bersih Sentosa', category: 'cleaning', contactPerson: 'Pak Slamet', phone: '021-5550101', contractStart: '2026-01-01', contractEnd: '2026-12-31', status: 'active' },
+  { id: 'vnd-02', name: 'PT Garda Aman Sejahtera', category: 'security', contactPerson: 'Ibu Ratna', phone: '021-5550202', contractStart: '2025-06-01', contractEnd: '2026-05-31', status: 'active' },
+  { id: 'vnd-03', name: 'CV Sejuk Teknik HVAC', category: 'hvac', contactPerson: 'Pak Bayu', phone: '021-5550303', contractStart: '2026-02-01', contractEnd: '2027-01-31', status: 'active' },
+  { id: 'vnd-04', name: 'PT Lift Nusantara', category: 'elevator', contactPerson: 'Pak Joko', phone: '021-5550404', contractStart: '2024-01-01', contractEnd: '2025-12-31', status: 'inactive' },
+  { id: 'vnd-05', name: 'CV Hijau Lestari Landscaping', category: 'landscaping', contactPerson: 'Ibu Sari', phone: '021-5550505', contractStart: '2026-03-01', contractEnd: '2027-02-28', status: 'active' },
 ]

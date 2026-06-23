@@ -17,6 +17,11 @@ export type ComplaintStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
 export type ComplaintPriority = 'low' | 'medium' | 'high' | 'urgent'
 export type AnnouncementAudience = 'all' | 'single_building'
 
+export type LeaseStatus = 'active' | 'ending_soon' | 'expired' | 'terminated'
+export type MeterType = 'water' | 'electricity'
+export type VendorCategory = 'cleaning' | 'security' | 'hvac' | 'elevator' | 'landscaping' | 'pest_control' | 'general'
+export type VendorStatus = 'active' | 'inactive'
+
 export interface Building {
   id: string
   name: string
@@ -192,4 +197,39 @@ export interface Announcement {
   buildingId?: string
   publishedAt: string
   publishedBy: string
+}
+
+export interface Lease {
+  id: string
+  unitId: string
+  buildingId: string
+  tenantName: string
+  tenantPhone: string
+  startDate: string
+  endDate: string
+  monthlyRent: number
+  depositAmount: number
+  status: LeaseStatus
+}
+
+export interface MeterReading {
+  id: string
+  unitId: string
+  buildingId: string
+  meterType: MeterType
+  period: string
+  previousReading: number
+  currentReading: number
+  ratePerUnit: number
+}
+
+export interface Vendor {
+  id: string
+  name: string
+  category: VendorCategory
+  contactPerson: string
+  phone: string
+  contractStart: string
+  contractEnd: string
+  status: VendorStatus
 }

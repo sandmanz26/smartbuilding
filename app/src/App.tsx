@@ -15,6 +15,9 @@ import Parking from '@/pages/Parking'
 import Amenities from '@/pages/Amenities'
 import Complaints from '@/pages/Complaints'
 import Announcements from '@/pages/Announcements'
+import Leases from '@/pages/Leases'
+import MeterReadings from '@/pages/MeterReadings'
+import Vendors from '@/pages/Vendors'
 
 function App() {
   return (
@@ -34,6 +37,9 @@ function App() {
           <Route path="/amenities" element={<Amenities />} />
           <Route path="/complaints" element={<Complaints />} />
           <Route path="/announcements" element={<Announcements />} />
+          <Route path="/leases" element={<Leases />} />
+          <Route path="/meter-readings" element={<MeterReadings />} />
+          <Route path="/vendors" element={<Vendors />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/users" element={<UsersPage />} />
         </Route>

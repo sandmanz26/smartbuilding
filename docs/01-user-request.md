@@ -54,3 +54,34 @@ apartemen sehari-hari:
 
 Tetap frontend-only dengan mock data, konsisten dengan stack React + shadcn/ui
 yang sudah ada.
+
+## Request #3 — 2026-06-23
+
+**Bahasa asal (Indonesia):**
+
+> tolong buat data table lebih mature seperti sort, search, filter, termasuk
+> CRUD nya juga. serta saya mau lebih banyak fitur yang betul betul real ada
+> di market. sekali lagi pikirkan dari sisi product juga
+
+**Ringkasan kebutuhan:**
+
+1. **Data table yang mature** — semua tabel di seluruh modul perlu naik level
+   dari tabel statis menjadi data table interaktif: sorting per kolom, search/
+   pencarian, faceted filter (multi-select per kolom seperti status/kategori),
+   dan pagination — dibangun sebagai komponen generik (`DataTable`,
+   `DataTableColumnHeader`, `DataTableFacetedFilter`) berbasis TanStack Table.
+2. **CRUD penuh** — setiap modul mendapat kemampuan Tambah/Edit/Hapus melalui
+   `FormDialog` (form generik berbasis konfigurasi field) dan `RowActions`
+   (dropdown edit/hapus dengan dialog konfirmasi), dengan state lokal React
+   (`useState`) yang di-seed dari mock data — tetap frontend-only, tanpa backend.
+3. **Fitur baru yang nyata ada di pasar properti/apartemen** — ditambahkan tiga
+   modul baru yang lazim dipakai software property management komersial:
+   - **Manajemen Sewa (Lease Management)** — kontrak sewa unit, masa sewa,
+     nilai sewa bulanan, deposit, status (aktif/akan berakhir/berakhir/diputus).
+   - **Submetering Air & Listrik (Meter Reading)** — pencatatan meter individual
+     per unit per periode untuk penagihan utilitas berbasis pemakaian aktual.
+   - **Vendor & Kontraktor (Vendor Management)** — data vendor jasa kebersihan,
+     keamanan, HVAC, lift, landscaping, pest control beserta masa kontrak & status.
+4. Modul yang sudah ada (Unit, Billing, Visitor, Parking, Amenity, Complaints,
+   Maintenance/Work Order, Pengguna) dikonversi dari tabel statis shadcn menjadi
+   `DataTable` dengan CRUD lengkap, konsisten dengan tiga modul baru di atas.

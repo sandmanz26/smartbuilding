@@ -11,6 +11,10 @@ import type {
   AmenityBookingStatus,
   ComplaintStatus,
   ComplaintPriority,
+  LeaseStatus,
+  VendorStatus,
+  VendorCategory,
+  MeterType,
 } from '@/types'
 
 export const statusBadgeVariant: Record<SystemStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -141,4 +145,43 @@ export const complaintPriorityVariant: Record<ComplaintPriority, 'default' | 'se
   high: 'destructive',
   medium: 'outline',
   low: 'secondary',
+}
+
+export const leaseStatusLabel: Record<LeaseStatus, string> = {
+  active: 'Aktif',
+  ending_soon: 'Akan Berakhir',
+  expired: 'Berakhir',
+  terminated: 'Diputus',
+}
+
+export const leaseStatusVariant: Record<LeaseStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  active: 'secondary',
+  ending_soon: 'outline',
+  expired: 'outline',
+  terminated: 'destructive',
+}
+
+export const vendorStatusLabel: Record<VendorStatus, string> = {
+  active: 'Aktif',
+  inactive: 'Tidak Aktif',
+}
+
+export const vendorStatusVariant: Record<VendorStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  active: 'secondary',
+  inactive: 'outline',
+}
+
+export const vendorCategoryLabel: Record<VendorCategory, string> = {
+  cleaning: 'Kebersihan',
+  security: 'Keamanan',
+  hvac: 'HVAC',
+  elevator: 'Lift',
+  landscaping: 'Taman/Landscaping',
+  pest_control: 'Pest Control',
+  general: 'Umum',
+}
+
+export const meterTypeLabel: Record<MeterType, string> = {
+  water: 'Air',
+  electricity: 'Listrik',
 }
