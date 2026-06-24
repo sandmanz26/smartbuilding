@@ -63,6 +63,28 @@ export default function Vendors() {
     setVendors((prev) => prev.filter((v) => v.id !== id))
   }
 
+  function handleBulkDelete(rows: Vendor[]) {
+    const ids = new Set(rows.map((r) => r.id))
+    setVendors((prev) => prev.filter((v) => !ids.has(v.id)))
+  }
+
+  function handleImport(rows: Record<string, string>[]) {
+    const categoryByLabel = new Map(
+      (Object.keys(vendorCategoryLabel) as VendorCategory[]).map((c) => [vendorCategoryLabel[c], c]),
+    )
+    const imported: Vendor[] = rows.map((row, idx) => ({
+      id: `vnd-import-${Date.now()}-${idx}`,
+      name: row['Nama Vendor'] ?? '',
+      category: categoryByLabel.get(row['Kategori']) ?? 'general',
+      contactPerson: row['Kontak Person'] ?? '',
+      phone: row['Telepon'] ?? '',
+      contractStart: new Date().toISOString().slice(0, 10),
+      contractEnd: new Date().toISOString().slice(0, 10),
+      status: 'active',
+    }))
+    setVendors((prev) => [...imported, ...prev])
+  }
+
   function handleSubmit(values: FormValues) {
     const payload = {
       name: String(values.name),
@@ -171,6 +193,10 @@ export default function Vendors() {
             ]}
             addLabel="Tambah Vendor"
             onAdd={openAdd}
+            exportFilename="vendors"
+            onImport={handleImport}
+            onBulkDelete={handleBulkDelete}
+            getRowId={(row) => row.id}
           />
         </CardContent>
       </Card>

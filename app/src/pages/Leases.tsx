@@ -8,8 +8,17 @@ import { RowActions } from '@/components/data-table/RowActions'
 import { FormDialog, type FieldConfig, type FormValues } from '@/components/data-table/FormDialog'
 import { buildings, units, leases as initialLeases } from '@/data/mock'
 import { leaseStatusLabel, leaseStatusVariant } from '@/lib/status'
-import { formatRupiah, formatDate } from '@/lib/format'
+import { formatRupiah, formatDate, daysUntil } from '@/lib/format'
 import type { Lease, LeaseStatus } from '@/types'
+
+const RENEWAL_WINDOW_DAYS = 60
+
+/** A lease is "due for renewal attention" if active and ending within the window, regardless of its stored status. */
+function isRenewalDue(lease: Lease) {
+  if (lease.status === 'expired' || lease.status === 'terminated') return false
+  const remaining = daysUntil(lease.endDate)
+  return remaining >= 0 && remaining <= RENEWAL_WINDOW_DAYS
+}
 
 const statusOptions = (Object.keys(leaseStatusLabel) as LeaseStatus[]).map((s) => ({
   label: leaseStatusLabel[s],
@@ -48,6 +57,7 @@ export default function Leases() {
   const activeCount = leases.filter((l) => l.status === 'active').length
   const endingSoonCount = leases.filter((l) => l.status === 'ending_soon').length
   const totalRent = leases.filter((l) => l.status === 'active' || l.status === 'ending_soon').reduce((sum, l) => sum + l.monthlyRent, 0)
+  const renewalDueCount = leases.filter(isRenewalDue).length
 
   function openAdd() {
     setEditing(null)
@@ -61,6 +71,31 @@ export default function Leases() {
 
   function handleDelete(id: string) {
     setLeases((prev) => prev.filter((l) => l.id !== id))
+  }
+
+  function handleBulkDelete(rows: Lease[]) {
+    const ids = new Set(rows.map((r) => r.id))
+    setLeases((prev) => prev.filter((l) => !ids.has(l.id)))
+  }
+
+  function handleImport(rows: Record<string, string>[]) {
+    const unitByNumber = new Map(units.map((u) => [u.unitNumber, u]))
+    const imported: Lease[] = rows.map((row, idx) => {
+      const unit = unitByNumber.get(row['Unit'])
+      return {
+        id: `lse-import-${Date.now()}-${idx}`,
+        tenantName: row['Penyewa'] ?? '',
+        tenantPhone: row['__phone__'] ?? '',
+        unitId: unit?.id ?? units[0]?.id ?? '',
+        buildingId: unit?.buildingId ?? buildings[0]?.id ?? '',
+        startDate: new Date().toISOString().slice(0, 10),
+        endDate: new Date().toISOString().slice(0, 10),
+        monthlyRent: Number(row['Sewa Bulanan']?.replace(/[^\d]/g, '')) || 0,
+        depositAmount: Number(row['Deposit']?.replace(/[^\d]/g, '')) || 0,
+        status: 'active',
+      }
+    })
+    setLeases((prev) => [...imported, ...prev])
   }
 
   function handleSubmit(values: FormValues) {
@@ -127,6 +162,19 @@ export default function Leases() {
       filterFn: (row, id, value) => (value as string[]).includes(row.getValue(id) as string),
     },
     {
+      id: 'renewal',
+      header: 'Pengingat Perpanjangan',
+      cell: ({ row }) => {
+        if (!isRenewalDue(row.original)) return '-'
+        const remaining = daysUntil(row.original.endDate)
+        return (
+          <Badge variant="destructive">
+            Berakhir {remaining} hari lagi
+          </Badge>
+        )
+      },
+    },
+    {
       id: 'actions',
       header: () => <div className="text-right">Aksi</div>,
       cell: ({ row }) => (
@@ -148,7 +196,7 @@ export default function Leases() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Sewa Aktif</CardTitle></CardHeader>
           <CardContent><div className="text-2xl font-bold">{activeCount}</div></CardContent>
@@ -160,6 +208,10 @@ export default function Leases() {
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Pendapatan Sewa Bulanan</CardTitle></CardHeader>
           <CardContent><div className="text-2xl font-bold">{formatRupiah(totalRent)}</div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Perlu Pengingat Perpanjangan ({RENEWAL_WINDOW_DAYS} hari)</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold">{renewalDueCount}</div></CardContent>
         </Card>
       </div>
 
@@ -177,6 +229,10 @@ export default function Leases() {
             facetedFilters={[{ columnId: 'status', title: 'Status', options: statusOptions }]}
             addLabel="Tambah Sewa"
             onAdd={openAdd}
+            exportFilename="leases"
+            onImport={handleImport}
+            onBulkDelete={handleBulkDelete}
+            getRowId={(row) => row.id}
           />
         </CardContent>
       </Card>

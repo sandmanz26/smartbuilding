@@ -85,3 +85,44 @@ yang sudah ada.
 4. Modul yang sudah ada (Unit, Billing, Visitor, Parking, Amenity, Complaints,
    Maintenance/Work Order, Pengguna) dikonversi dari tabel statis shadcn menjadi
    `DataTable` dengan CRUD lengkap, konsisten dengan tiga modul baru di atas.
+
+## Request #4 — 2026-06-24
+
+**Bahasa asal (Indonesia):**
+
+> tolong improve feature untuk handle complex case, dan lakukan competitor
+> research terkait building management untuk apartment, kira kira apalagi
+> yang bisa ditambahkan. lengkapi juga dengan export import
+
+**Ringkasan kebutuhan & implementasi:**
+
+1. **Competitor research v2** — riset kompetitor lanjutan (AppFolio, Buildium,
+   Yardi Breeze, serta konteks pasar IPL/strata apartemen Indonesia), didokumentasikan
+   di `docs/04-competitor-research-v2.md` lengkap dengan shortlist prioritas dan
+   sumber/link.
+2. **Export/Import CSV** — ditambahkan sebagai kapabilitas generik di
+   `DataTable` (bukan duplikasi per halaman): tombol "Export CSV" (mengekspor
+   baris yang sedang ter-filter/sort, browser-only via Blob) dan "Import CSV"
+   (parser CSV sederhana yang menghasilkan `Record<string,string>[]` lalu
+   dipetakan oleh masing-masing halaman ke tipe domainnya). Diaktifkan di
+   Unit, Billing, Manajemen Sewa, Vendor, dan Submetering.
+3. **Validasi form** — `FormDialog` kini memvalidasi field wajib, format angka,
+   dan format tanggal, dengan pesan error inline per field (sebelumnya form
+   bisa disubmit kosong/asal).
+4. **Bulk actions** — `DataTable` kini mendukung kolom checkbox seleksi baris
+   dan bulk-delete pada modul Unit, Billing, Manajemen Sewa, Vendor, dan
+   Submetering.
+5. **Peringatan integritas relasional** — menghapus Unit yang masih memiliki
+   data Sewa/Invoice terkait kini menampilkan dialog konfirmasi tambahan yang
+   menjelaskan referensi yang akan menjadi tidak valid, baik untuk hapus satuan
+   maupun bulk delete.
+6. **Fitur domain spesifik dari hasil riset:**
+   - Pengingat perpanjangan sewa otomatis (lease akan berakhir dalam 60 hari)
+     di modul Manajemen Sewa, dengan KPI card & badge per baris.
+   - Aging tunggakan (1-30/31-60/61-90/90+ hari) dan kalkulasi denda
+     keterlambatan otomatis (2% per 30 hari, maks. 20%) di modul Billing,
+     mengikuti pola umum software IPL apartemen Indonesia (MOaja, Lyrid) dan
+     fitur late-fee pada AppFolio/Buildium/Yardi.
+
+Tetap frontend-only, tanpa backend, konsisten dengan arsitektur mock-data dan
+pola DataTable/FormDialog/RowActions yang sudah ada.

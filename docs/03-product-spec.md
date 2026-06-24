@@ -66,6 +66,44 @@ Komponen ini dipakai konsisten di seluruh modul: Unit, Billing, Visitor,
 Parking, Amenity, Complaints, Maintenance (Work Order), Pengguna, dan tiga
 modul baru (Manajemen Sewa, Submetering, Vendor & Kontraktor).
 
+## Export/Import & Penanganan Complex Case (ditambahkan di Request #4)
+
+Setelah riset kompetitor lanjutan (`docs/04-competitor-research-v2.md`),
+ditambahkan kapabilitas berikut — generik di infrastruktur `DataTable`, bukan
+duplikasi per halaman:
+
+- **Export CSV** — tombol toolbar di `DataTable` (prop `exportFilename`)
+  yang mengekspor baris yang sedang ter-filter/sort ke file `.csv`, dibuat
+  murni di browser (`Blob` + `URL.createObjectURL`, tanpa library eksternal).
+  Header diturunkan dari definisi kolom.
+- **Import CSV** — tombol toolbar (prop `onImport`) dengan parser CSV ringan
+  (`src/lib/csv.ts`, menangani quoted field, koma, newline) yang mem-parse
+  file menjadi `Record<string,string>[]`; setiap halaman memetakan baris hasil
+  parse ke tipe domainnya sendiri lalu menggabungkannya ke state lokal.
+  Diaktifkan di modul Unit, Billing, Manajemen Sewa, Vendor & Kontraktor, dan
+  Submetering (modul data-entry paling intensif).
+- **Validasi form** — `FormDialog` memvalidasi field wajib (`required`,
+  default true kecuali dinyatakan `false`), format angka (termasuk `min`),
+  dan format tanggal, dengan pesan error inline di bawah setiap field serta
+  indikator `*` pada label field wajib. Submit diblokir selama ada error.
+- **Bulk actions** — `DataTable` mendukung kolom checkbox seleksi baris
+  (prop `onBulkDelete`) dengan tombol "Hapus (n)" dan dialog konfirmasi,
+  aktif di modul Unit, Billing, Manajemen Sewa, Vendor & Kontraktor, dan
+  Submetering — penting untuk mengelola ratusan unit/invoice sekaligus.
+- **Peringatan integritas relasional** — di modul Unit, menghapus satu atau
+  beberapa unit yang masih memiliki Lease/Invoice terkait memunculkan dialog
+  konfirmasi tambahan yang menjelaskan jumlah data terkait sebelum hapus
+  benar-benar dieksekusi (baik hapus satuan maupun bulk delete).
+- **Pengingat perpanjangan sewa** — modul Manajemen Sewa menghitung otomatis
+  lease yang akan berakhir dalam 60 hari (`daysUntil` di `lib/format.ts`) dan
+  menampilkannya sebagai KPI card serta badge "Berakhir N hari lagi" per baris.
+- **Aging tunggakan & denda keterlambatan otomatis** — modul Billing
+  menghitung kolom "Umur Tunggakan" (bucket 1-30/31-60/61-90/90+ hari) dan
+  "Denda" (2% dari nilai invoice per blok 30 hari terlambat, maksimum 20%,
+  via `calculateLateFee` di `lib/format.ts`), plus KPI card potensi denda
+  keseluruhan — meniru praktik umum software IPL apartemen Indonesia dan
+  fitur late-fee AppFolio/Buildium/Yardi Breeze.
+
 ## Tech Stack
 - React 19 + TypeScript + Vite
 - Tailwind CSS v4 + shadcn/ui (`new-york` style)
@@ -85,7 +123,8 @@ app/src/
   data/mock.ts       # seluruh mock data (buildings, hvac, alarms, leases, dll.)
   lib/
     status.ts        # mapping label & badge variant per status/severity
-    format.ts         # formatRupiah, formatDate, formatDateTime
+    format.ts         # formatRupiah, formatDate, formatDateTime, daysUntil, calculateLateFee
+    csv.ts             # parser & builder CSV browser-only untuk export/import (Request #4)
   pages/             # 18 halaman modul di atas
   types/index.ts     # definisi tipe domain BMS & residential
 ```

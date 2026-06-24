@@ -59,6 +59,32 @@ export default function MeterReadings() {
     setReadings((prev) => prev.filter((r) => r.id !== id))
   }
 
+  function handleBulkDelete(rows: MeterReading[]) {
+    const ids = new Set(rows.map((r) => r.id))
+    setReadings((prev) => prev.filter((r) => !ids.has(r.id)))
+  }
+
+  function handleImport(rows: Record<string, string>[]) {
+    const unitByNumber = new Map(units.map((u) => [u.unitNumber, u]))
+    const typeByLabel = new Map(
+      (Object.keys(meterTypeLabel) as MeterType[]).map((t) => [meterTypeLabel[t], t]),
+    )
+    const imported: MeterReading[] = rows.map((row, idx) => {
+      const unit = unitByNumber.get(row['Unit'])
+      return {
+        id: `mtr-import-${Date.now()}-${idx}`,
+        unitId: unit?.id ?? units[0]?.id ?? '',
+        buildingId: unit?.buildingId ?? buildings[0]?.id ?? '',
+        meterType: typeByLabel.get(row['Jenis Meter']) ?? 'water',
+        period: row['Periode'] ?? '',
+        previousReading: Number(row['Sebelumnya']) || 0,
+        currentReading: Number(row['Saat Ini']) || 0,
+        ratePerUnit: 0,
+      }
+    })
+    setReadings((prev) => [...imported, ...prev])
+  }
+
   function handleSubmit(values: FormValues) {
     const unit = units.find((u) => u.id === String(values.unitId))
     const payload = {
@@ -168,6 +194,10 @@ export default function MeterReadings() {
             facetedFilters={[{ columnId: 'meterType', title: 'Jenis Meter', options: meterTypeOptions }]}
             addLabel="Tambah Pembacaan"
             onAdd={openAdd}
+            exportFilename="meter-readings"
+            onImport={handleImport}
+            onBulkDelete={handleBulkDelete}
+            getRowId={(row) => row.id}
           />
         </CardContent>
       </Card>

@@ -8,7 +8,7 @@ import { RowActions } from '@/components/data-table/RowActions'
 import { FormDialog, type FieldConfig, type FormValues } from '@/components/data-table/FormDialog'
 import { buildings, units, invoices as initialInvoices } from '@/data/mock'
 import { invoiceStatusLabel, invoiceStatusVariant } from '@/lib/status'
-import { formatRupiah, formatDate } from '@/lib/format'
+import { formatRupiah, formatDate, calculateLateFee, daysUntil } from '@/lib/format'
 import type { Invoice, InvoiceStatus } from '@/types'
 
 const statusOptions = (Object.keys(invoiceStatusLabel) as InvoiceStatus[]).map((s) => ({
@@ -47,6 +47,18 @@ export default function Billing() {
   const totalBilled = invoices.reduce((sum, i) => sum + i.amount, 0)
   const totalOverdue = invoices.filter((i) => i.status === 'overdue').reduce((sum, i) => sum + i.amount, 0)
   const overdueCount = invoices.filter((i) => i.status === 'overdue').length
+  const totalLateFees = invoices
+    .filter((i) => i.status === 'overdue')
+    .reduce((sum, i) => sum + calculateLateFee(i.amount, i.dueDate), 0)
+
+  function agingBucket(invoice: Invoice): string {
+    if (invoice.status !== 'overdue') return '-'
+    const overdueDays = -daysUntil(invoice.dueDate)
+    if (overdueDays <= 30) return '1-30 hari'
+    if (overdueDays <= 60) return '31-60 hari'
+    if (overdueDays <= 90) return '61-90 hari'
+    return '90+ hari'
+  }
 
   function openAdd() {
     setEditing(null)
@@ -60,6 +72,29 @@ export default function Billing() {
 
   function handleDelete(id: string) {
     setInvoices((prev) => prev.filter((i) => i.id !== id))
+  }
+
+  function handleBulkDelete(rows: Invoice[]) {
+    const ids = new Set(rows.map((r) => r.id))
+    setInvoices((prev) => prev.filter((i) => !ids.has(i.id)))
+  }
+
+  function handleImport(rows: Record<string, string>[]) {
+    const unitByNumber = new Map(units.map((u) => [u.unitNumber, u]))
+    const imported: Invoice[] = rows.map((row, idx) => {
+      const unit = unitByNumber.get(row['Unit'])
+      return {
+        id: `inv-import-${Date.now()}-${idx}`,
+        unitId: unit?.id ?? units[0]?.id ?? '',
+        buildingId: unit?.buildingId ?? buildings[0]?.id ?? '',
+        period: row['Periode'] ?? '',
+        description: row['Keterangan'] ?? '',
+        amount: Number(row['Jumlah']?.replace(/[^\d]/g, '')) || 0,
+        dueDate: row['Jatuh Tempo'] ?? new Date().toISOString().slice(0, 10),
+        status: 'due',
+      }
+    })
+    setInvoices((prev) => [...imported, ...prev])
   }
 
   function handleSubmit(values: FormValues) {
@@ -110,6 +145,20 @@ export default function Billing() {
       cell: ({ row }) => formatDate(row.original.dueDate),
     },
     {
+      id: 'lateFee',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Denda" />,
+      accessorFn: (row) => calculateLateFee(row.amount, row.dueDate),
+      cell: ({ getValue }) => {
+        const fee = getValue<number>()
+        return fee > 0 ? <span className="text-destructive">{formatRupiah(fee)}</span> : '-'
+      },
+    },
+    {
+      id: 'aging',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Umur Tunggakan" />,
+      accessorFn: (row) => agingBucket(row),
+    },
+    {
       accessorKey: 'status',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
       cell: ({ row }) => (
@@ -139,7 +188,7 @@ export default function Billing() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Total Tagihan Bulan Ini</CardTitle></CardHeader>
           <CardContent><div className="text-2xl font-bold">{formatRupiah(totalBilled)}</div></CardContent>
@@ -151,6 +200,10 @@ export default function Billing() {
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Jumlah Unit Tertunggak</CardTitle></CardHeader>
           <CardContent><div className="text-2xl font-bold">{overdueCount}</div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Potensi Denda Keterlambatan</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold">{formatRupiah(totalLateFees)}</div></CardContent>
         </Card>
       </div>
 
@@ -168,6 +221,10 @@ export default function Billing() {
             facetedFilters={[{ columnId: 'status', title: 'Status', options: statusOptions }]}
             addLabel="Tambah Invoice"
             onAdd={openAdd}
+            exportFilename="billing-invoices"
+            onImport={handleImport}
+            onBulkDelete={handleBulkDelete}
+            getRowId={(row) => row.id}
           />
         </CardContent>
       </Card>

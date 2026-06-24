@@ -5,7 +5,17 @@ import { DataTable } from '@/components/data-table/DataTable';
 import { DataTableColumnHeader } from '@/components/data-table/DataTableColumnHeader';
 import { RowActions } from '@/components/data-table/RowActions';
 import { FormDialog, type FieldConfig, type FormValues } from '@/components/data-table/FormDialog';
-import { units as initialUnits, buildings } from '@/data/mock';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { units as initialUnits, buildings, leases, invoices } from '@/data/mock';
 import type { Unit, UnitOccupancyStatus } from '@/types';
 import { unitStatusLabel, unitStatusVariant } from '@/lib/status';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -39,14 +49,25 @@ const fields: FieldConfig[] = [
     options: statusOptions,
   },
   { name: 'ownerName', label: 'Pemilik', type: 'text' },
-  { name: 'tenantName', label: 'Penyewa', type: 'text' },
+  { name: 'tenantName', label: 'Penyewa', type: 'text', required: false },
   { name: 'phone', label: 'Telepon', type: 'text' },
 ];
+
+function referencesFor(unitId: string): string[] {
+  const reasons: string[] = [];
+  const leaseCount = leases.filter((l) => l.unitId === unitId).length;
+  const invoiceCount = invoices.filter((i) => i.unitId === unitId).length;
+  if (leaseCount > 0) reasons.push(`${leaseCount} data sewa`);
+  if (invoiceCount > 0) reasons.push(`${invoiceCount} invoice`);
+  return reasons;
+}
 
 export default function Units() {
   const [data, setData] = useState<Unit[]>(initialUnits);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Unit | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Unit | null>(null);
+  const [pendingBulkDelete, setPendingBulkDelete] = useState<Unit[] | null>(null);
 
   const totalUnits = data.length;
   const occupiedUnits = data.filter(
@@ -68,6 +89,41 @@ export default function Units() {
 
   function handleDelete(unit: Unit) {
     setData((prev) => prev.filter((item) => item.id !== unit.id));
+    setPendingDelete(null);
+  }
+
+  function handleBulkDelete(units: Unit[]) {
+    const withRefs = units.filter((u) => referencesFor(u.id).length > 0);
+    if (withRefs.length > 0) {
+      setPendingBulkDelete(units);
+      return;
+    }
+    const ids = new Set(units.map((u) => u.id));
+    setData((prev) => prev.filter((item) => !ids.has(item.id)));
+  }
+
+  function confirmBulkDelete() {
+    if (!pendingBulkDelete) return;
+    const ids = new Set(pendingBulkDelete.map((u) => u.id));
+    setData((prev) => prev.filter((item) => !ids.has(item.id)));
+    setPendingBulkDelete(null);
+  }
+
+  function handleImport(rows: Record<string, string>[]) {
+    const buildingByName = new Map(buildings.map((b) => [b.name, b.id]));
+    const imported: Unit[] = rows.map((row, idx) => ({
+      id: `unt-import-${Date.now()}-${idx}`,
+      buildingId: buildingByName.get(row['Tower']) ?? buildings[0]?.id ?? '',
+      unitNumber: row['No. Unit'] ?? '',
+      floor: Number(row['Lantai']) || 0,
+      type: row['Tipe'] ?? '',
+      areaSqm: Number(row['Luas']?.replace(/[^\d.]/g, '')) || 0,
+      ownerName: row['Pemilik'] ?? '',
+      tenantName: row['Penyewa'] && row['Penyewa'] !== '-' ? row['Penyewa'] : undefined,
+      phone: row['Telepon'] ?? '',
+      status: 'vacant',
+    }));
+    setData((prev) => [...imported, ...prev]);
   }
 
   function handleSubmit(values: FormValues) {
@@ -158,7 +214,14 @@ export default function Units() {
       cell: ({ row }) => (
         <RowActions
           onEdit={() => openEdit(row.original)}
-          onDelete={() => handleDelete(row.original)}
+          onDelete={() => {
+            const refs = referencesFor(row.original.id);
+            if (refs.length > 0) {
+              setPendingDelete(row.original);
+            } else {
+              handleDelete(row.original);
+            }
+          }}
           deleteLabel={`Hapus unit ${row.original.unitNumber}?`}
         />
       ),
@@ -217,9 +280,52 @@ export default function Units() {
             ]}
             addLabel="Tambah Unit"
             onAdd={openAdd}
+            exportFilename="units"
+            onImport={handleImport}
+            onBulkDelete={handleBulkDelete}
+            getRowId={(row) => row.id}
           />
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!pendingDelete} onOpenChange={(open) => !open && setPendingDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unit ini masih memiliki data terkait</AlertDialogTitle>
+            <AlertDialogDescription>
+              Unit {pendingDelete?.unitNumber} masih terkait dengan{' '}
+              {pendingDelete && referencesFor(pendingDelete.id).join(' dan ')}. Menghapus unit ini
+              akan meninggalkan data tersebut tanpa referensi unit yang valid. Lanjutkan hapus?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={() => pendingDelete && handleDelete(pendingDelete)}>
+              Tetap Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={!!pendingBulkDelete}
+        onOpenChange={(open) => !open && setPendingBulkDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sebagian unit terpilih memiliki data terkait</AlertDialogTitle>
+            <AlertDialogDescription>
+              Beberapa unit dalam pilihan ini masih memiliki data sewa/invoice terkait. Menghapus
+              unit-unit ini akan meninggalkan data tersebut tanpa referensi unit yang valid.
+              Lanjutkan hapus {pendingBulkDelete?.length} unit?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmBulkDelete}>Tetap Hapus</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <FormDialog
         open={dialogOpen}

@@ -19,10 +19,19 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
+type BaseFieldConfig = {
+  name: string
+  label: string
+  placeholder?: string
+  required?: boolean
+  /** Minimum numeric value (type: 'number' only). */
+  min?: number
+}
+
 export type FieldConfig =
-  | { name: string; label: string; type: 'text' | 'number' | 'date' | 'datetime'; placeholder?: string }
-  | { name: string; label: string; type: 'textarea'; placeholder?: string }
-  | { name: string; label: string; type: 'select'; options: { label: string; value: string }[] }
+  | (BaseFieldConfig & { type: 'text' | 'number' | 'date' | 'datetime' })
+  | (BaseFieldConfig & { type: 'textarea' })
+  | (BaseFieldConfig & { type: 'select'; options: { label: string; value: string }[] })
 
 export type FormValues = Record<string, string | number>
 
@@ -37,6 +46,24 @@ interface FormDialogProps {
   submitLabel?: string
 }
 
+function validateField(field: FieldConfig, rawValue: string | number): string | null {
+  const value = String(rawValue ?? '').trim()
+  if (field.required !== false && value === '') {
+    return 'Wajib diisi.'
+  }
+  if (value === '') return null
+
+  if (field.type === 'number') {
+    const num = Number(value)
+    if (Number.isNaN(num)) return 'Harus berupa angka.'
+    if (field.min !== undefined && num < field.min) return `Minimal ${field.min}.`
+  }
+  if (field.type === 'date' || field.type === 'datetime') {
+    if (Number.isNaN(new Date(value).getTime())) return 'Tanggal tidak valid.'
+  }
+  return null
+}
+
 export function FormDialog({
   open,
   onOpenChange,
@@ -48,17 +75,37 @@ export function FormDialog({
   submitLabel = 'Simpan',
 }: FormDialogProps) {
   const [values, setValues] = useState<FormValues>(defaultValues)
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    if (open) setValues(defaultValues)
+    if (open) {
+      setValues(defaultValues)
+      setErrors({})
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, JSON.stringify(defaultValues)])
 
   function handleChange(name: string, value: string) {
     setValues((prev) => ({ ...prev, [name]: value }))
+    if (errors[name]) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[name]
+        return next
+      })
+    }
   }
 
   function handleSubmit() {
+    const nextErrors: Record<string, string> = {}
+    for (const field of fields) {
+      const message = validateField(field, values[field.name])
+      if (message) nextErrors[field.name] = message
+    }
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors)
+      return
+    }
     onSubmit(values)
     onOpenChange(false)
   }
@@ -73,13 +120,16 @@ export function FormDialog({
         <div className="grid gap-4 py-2">
           {fields.map((field) => (
             <div key={field.name} className="grid gap-1.5">
-              <Label htmlFor={field.name}>{field.label}</Label>
+              <Label htmlFor={field.name}>
+                {field.label}
+                {field.required !== false && <span className="text-destructive"> *</span>}
+              </Label>
               {field.type === 'select' ? (
                 <Select
                   value={String(values[field.name] ?? '')}
                   onValueChange={(v) => handleChange(field.name, v)}
                 >
-                  <SelectTrigger id={field.name}>
+                  <SelectTrigger id={field.name} aria-invalid={!!errors[field.name]}>
                     <SelectValue placeholder={`Pilih ${field.label}`} />
                   </SelectTrigger>
                   <SelectContent>
@@ -96,6 +146,7 @@ export function FormDialog({
                   placeholder={field.placeholder}
                   value={String(values[field.name] ?? '')}
                   onChange={(e) => handleChange(field.name, e.target.value)}
+                  aria-invalid={!!errors[field.name]}
                 />
               ) : (
                 <Input
@@ -104,7 +155,11 @@ export function FormDialog({
                   placeholder={field.placeholder}
                   value={String(values[field.name] ?? '')}
                   onChange={(e) => handleChange(field.name, e.target.value)}
+                  aria-invalid={!!errors[field.name]}
                 />
+              )}
+              {errors[field.name] && (
+                <p className="text-xs text-destructive">{errors[field.name]}</p>
               )}
             </div>
           ))}
