@@ -113,6 +113,9 @@ sudah ada (tanpa ledger/tabel baru), konsisten dengan pola yang ada:
   menghitung total invoice belum lunas (`status !== 'paid'`) per unit dari
   `invoices`, via `calculateOutstandingBalance(unitId, invoices)` di
   `lib/format.ts`. Ditampilkan sebagai badge "Lunas" atau "Ada Tunggakan: Rp X".
+  Modul Billing menambah panel ringkasan "Tunggakan IPL per Unit" yang
+  mengelompokkan saldo tertunggak per unit (diurutkan dari terbesar), memakai
+  helper yang sama, tanpa ledger terpisah.
 - **Status dijual vs kosong biasa** — `Unit.isListedForSale: boolean`
   melengkapi `Unit.status: UnitOccupancyStatus` untuk membedakan unit kosong
   biasa dari unit yang sudah dimiliki tapi sedang aktif dipasarkan dan belum
@@ -128,6 +131,11 @@ sudah ada (tanpa ledger/tabel baru), konsisten dengan pola yang ada:
   (`parkingSlots` dengan `unitId` cocok) terhadap kuota, dengan badge status
   "Sesuai Kuota"/"Lebih Kuota"/"Belum Ada Slot" dan KPI card ringkasan unit
   yang lebih kuota / belum punya slot.
+- **Jenis pengguna slot parkir** — `ParkingSlot.userType: 'resident' | 'visitor'`
+  ditambahkan untuk membedakan slot parkir penghuni vs. slot tamu, dengan label
+  & badge di `lib/status.ts` (`parkingUserTypeLabel`/`parkingUserTypeVariant`),
+  kolom badge dan faceted filter "Jenis Pengguna" di tabel slot parkir, serta
+  field pilihan pada form Tambah/Edit Slot Parkir.
 
 ## Tech Stack
 - React 19 + TypeScript + Vite
