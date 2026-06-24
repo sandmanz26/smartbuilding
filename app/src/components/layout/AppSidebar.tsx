@@ -18,6 +18,7 @@ import {
   FileSignature,
   Gauge,
   HardHat,
+  Settings2,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import {
@@ -49,6 +50,7 @@ const residentItems = [
   { title: 'Visitor Management', url: '/visitors', icon: UserCheck },
   { title: 'Parking', url: '/parking', icon: CarFront },
   { title: 'Amenity Booking', url: '/amenities', icon: CalendarCheck },
+  { title: 'Pengaturan Fasilitas', url: '/amenities/settings', icon: Settings2 },
   { title: 'Keluhan & Tiket', url: '/complaints', icon: MessageSquareWarning },
   { title: 'Pengumuman', url: '/announcements', icon: Megaphone },
 ]

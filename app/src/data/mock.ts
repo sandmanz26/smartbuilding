@@ -12,6 +12,7 @@ import type {
   Invoice,
   Visitor,
   ParkingSlot,
+  Amenity,
   AmenityBooking,
   Complaint,
   Announcement,
@@ -172,11 +173,22 @@ export const parkingSlots: ParkingSlot[] = [
   { id: 'prk-09', buildingId: 'bld-01', slotCode: 'B2-M11', level: 'Basement 2 (Motor)', vehicleType: 'motorcycle', userType: 'resident', status: 'occupied', unitId: 'unt-03', vehiclePlate: 'B 4005 XYZ' },
 ]
 
+export const amenities: Amenity[] = [
+  { id: 'fac-01', audience: 'all', name: 'Kolam Renang', category: 'olahraga', operatingHoursStart: '06:00', operatingHoursEnd: '21:00', slotDurationMinutes: 60, capacityPerSlot: 4, status: 'active' },
+  { id: 'fac-02', audience: 'all', name: 'Gym', category: 'olahraga', operatingHoursStart: '05:00', operatingHoursEnd: '22:00', slotDurationMinutes: 60, capacityPerSlot: 6, status: 'active' },
+  { id: 'fac-03', audience: 'single_building', buildingId: 'bld-01', name: 'Function Hall', category: 'acara', operatingHoursStart: '08:00', operatingHoursEnd: '22:00', slotDurationMinutes: 180, capacityPerSlot: 1, status: 'active' },
+  { id: 'fac-04', audience: 'single_building', buildingId: 'bld-03', name: 'BBQ Area', category: 'rekreasi', operatingHoursStart: '15:00', operatingHoursEnd: '22:00', slotDurationMinutes: 180, capacityPerSlot: 1, status: 'active' },
+  { id: 'fac-05', audience: 'single_building', buildingId: 'bld-01', name: 'Sky Lounge', category: 'rekreasi', operatingHoursStart: '10:00', operatingHoursEnd: '23:00', slotDurationMinutes: 120, capacityPerSlot: 2, status: 'active' },
+  { id: 'fac-06', audience: 'all', name: 'Co-working Space', category: 'kerja', operatingHoursStart: '07:00', operatingHoursEnd: '21:00', slotDurationMinutes: 60, capacityPerSlot: 10, status: 'active' },
+  { id: 'fac-07', audience: 'all', name: 'Perpustakaan', category: 'rekreasi', operatingHoursStart: '08:00', operatingHoursEnd: '20:00', slotDurationMinutes: 60, capacityPerSlot: 8, status: 'active' },
+  { id: 'fac-08', audience: 'single_building', buildingId: 'bld-02', name: 'Meja Biliard', category: 'rekreasi', operatingHoursStart: '10:00', operatingHoursEnd: '22:00', slotDurationMinutes: 60, capacityPerSlot: 2, status: 'inactive' },
+]
+
 export const amenityBookings: AmenityBooking[] = [
-  { id: 'amn-01', buildingId: 'bld-01', amenityName: 'Kolam Renang', unitId: 'unt-01', bookedBy: 'Andi Wijaya', date: '2026-06-23', timeSlot: '07:00 - 08:00', status: 'confirmed' },
-  { id: 'amn-02', buildingId: 'bld-01', amenityName: 'Function Hall', unitId: 'unt-03', bookedBy: 'Hendra Gunawan', date: '2026-06-25', timeSlot: '18:00 - 21:00', status: 'pending' },
-  { id: 'amn-03', buildingId: 'bld-02', amenityName: 'Gym', unitId: 'unt-05', bookedBy: 'Kevin Tanaka', date: '2026-06-23', timeSlot: '17:00 - 18:00', status: 'confirmed' },
-  { id: 'amn-04', buildingId: 'bld-03', amenityName: 'BBQ Area', unitId: 'unt-07', bookedBy: 'Dewi Anggraini', date: '2026-06-24', timeSlot: '16:00 - 19:00', status: 'cancelled' },
+  { id: 'amn-01', buildingId: 'bld-01', amenityId: 'fac-01', unitId: 'unt-01', bookedBy: 'Andi Wijaya', date: '2026-06-23', timeSlot: '07:00 - 08:00', status: 'confirmed' },
+  { id: 'amn-02', buildingId: 'bld-01', amenityId: 'fac-03', unitId: 'unt-03', bookedBy: 'Hendra Gunawan', date: '2026-06-25', timeSlot: '18:00 - 21:00', status: 'pending' },
+  { id: 'amn-03', buildingId: 'bld-02', amenityId: 'fac-02', unitId: 'unt-05', bookedBy: 'Kevin Tanaka', date: '2026-06-23', timeSlot: '17:00 - 18:00', status: 'confirmed' },
+  { id: 'amn-04', buildingId: 'bld-03', amenityId: 'fac-04', unitId: 'unt-07', bookedBy: 'Dewi Anggraini', date: '2026-06-24', timeSlot: '16:00 - 19:00', status: 'cancelled' },
 ]
 
 export const complaints: Complaint[] = [

@@ -167,3 +167,58 @@ Tetap frontend-only, tanpa backend, derived dari mock data yang sudah ada
 (tidak membuat ledger/ relasi data baru di luar yang diperlukan), konsisten
 dengan pola DataTable/FormDialog/RowActions dan `lib/status.ts` /
 `lib/format.ts` yang sudah ada.
+
+## Request #6 — 2026-06-24
+
+**Bahasa asal (Indonesia):**
+
+> Cek dan kalau belum ada tambahkan. Pengaturan untuk reservasi fasilitas
+> nya misal library pool biliard dll jadi ada schedule nya di book oleh
+> kamar berapa / unit berapa jam berapa quota juga perlu ada.
+
+**Ringkasan kebutuhan & implementasi:**
+
+Sebelumnya modul Amenity Booking hanya memiliki field teks bebas untuk nama
+fasilitas (daftar hardcoded di komponen) dan slot waktu (teks bebas tanpa
+validasi), tanpa konsep kuota/kapasitas dan tanpa halaman pengaturan
+fasilitas tersendiri. Diimplementasikan:
+
+1. **Entitas master `Amenity`** (`src/types/index.ts`) — merepresentasikan
+   fasilitas yang dapat direservasi (Perpustakaan, Kolam Renang, Meja
+   Biliard, Gym, Function Hall, BBQ Area, Sky Lounge, Co-working Space),
+   dengan field `audience: 'all' | 'single_building'` (meniru pola
+   `AnnouncementAudience` yang sudah ada) + `buildingId` opsional untuk
+   fasilitas yang spesifik per tower, `category`, `operatingHoursStart`/
+   `operatingHoursEnd`, `slotDurationMinutes`, `capacityPerSlot` (kuota),
+   dan `status: 'active' | 'inactive'` (untuk menutup fasilitas sementara,
+   misal maintenance).
+2. **Halaman baru "Pengaturan Fasilitas"** (`src/pages/AmenitySettings.tsx`,
+   rute `/amenities/settings`) — CRUD penuh (DataTable + FormDialog +
+   RowActions, pola yang sama dengan modul lain) untuk mengelola master
+   fasilitas: jam operasional, durasi slot, kuota per slot, cakupan
+   tower, dan status aktif/nonaktif. Ditambahkan ke sidebar tepat di bawah
+   "Amenity Booking" dalam grup "Manajemen Penghuni".
+3. **`AmenityBooking.amenityId`** menggantikan `amenityName` bebas teks —
+   kini berupa foreign key ke `Amenity`. Form booking memuat pilihan
+   fasilitas dari daftar `Amenity` yang `status: 'active'`.
+4. **Slot waktu dinamis** — opsi slot waktu pada form booking dihasilkan
+   otomatis dari jam operasional & durasi slot fasilitas yang dipilih
+   (`generateTimeSlots` di `lib/format.ts`, menghasilkan rentang seperti
+   "06:00 - 07:00"). Disederhanakan dengan menambah hook generik
+   `onFieldChange` pada `FormDialog` (dipanggil setiap field berubah) agar
+   halaman pemanggil bisa menurunkan opsi select dependen (slot waktu)
+   berdasarkan field lain (fasilitas) tanpa mengubah arsitektur form yang
+   sudah ada.
+5. **Penegakan kuota** — saat submit booking (tambah/edit), dihitung jumlah
+   booking aktif (status bukan `cancelled`) untuk kombinasi
+   fasilitas+tanggal+slot yang sama; jika sudah mencapai `capacityPerSlot`,
+   submit diblokir dengan peringatan. Kolom "Kuota Slot" di tabel reservasi
+   menampilkan pemakaian real-time, misal "2 dari 4 slot terisi".
+6. Mock data (`src/data/mock.ts`) menambah array `amenities` (8 fasilitas
+   contoh termasuk Perpustakaan, Kolam Renang, dan Meja Biliard sesuai
+   permintaan) dan memperbarui `amenityBookings` agar memakai `amenityId`.
+
+Tetap frontend-only, tanpa backend, tanpa penyelesaian konflik real-time di
+luar penghitungan kuota sinkron terhadap state lokal, konsisten dengan
+arsitektur mock-data dan pola DataTable/FormDialog/RowActions/`lib/status.ts`/
+`lib/format.ts` yang sudah ada.

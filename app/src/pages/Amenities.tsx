@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -6,9 +6,9 @@ import { DataTable } from '@/components/data-table/DataTable'
 import { DataTableColumnHeader } from '@/components/data-table/DataTableColumnHeader'
 import { RowActions } from '@/components/data-table/RowActions'
 import { FormDialog, type FieldConfig, type FormValues } from '@/components/data-table/FormDialog'
-import { buildings, units, amenityBookings as initialAmenityBookings } from '@/data/mock'
+import { buildings, units, amenities, amenityBookings as initialAmenityBookings } from '@/data/mock'
 import { amenityStatusLabel, amenityStatusVariant } from '@/lib/status'
-import { formatDate } from '@/lib/format'
+import { formatDate, generateTimeSlots } from '@/lib/format'
 import type { AmenityBooking, AmenityBookingStatus } from '@/types'
 
 const statusOptions = (Object.keys(amenityStatusLabel) as AmenityBookingStatus[]).map((s) => ({
@@ -16,28 +16,17 @@ const statusOptions = (Object.keys(amenityStatusLabel) as AmenityBookingStatus[]
   value: s,
 }))
 
-const amenityNameOptions = [
-  { label: 'Kolam Renang', value: 'Kolam Renang' },
-  { label: 'Gym', value: 'Gym' },
-  { label: 'Function Hall', value: 'Function Hall' },
-  { label: 'BBQ Area', value: 'BBQ Area' },
-  { label: 'Sky Lounge', value: 'Sky Lounge' },
-  { label: 'Co-working Space', value: 'Co-working Space' },
-]
+const activeAmenities = amenities.filter((a) => a.status === 'active')
+
+const amenityOptions = activeAmenities.map((a) => ({
+  label: a.audience === 'all' ? a.name : `${a.name} (${buildings.find((b) => b.id === a.buildingId)?.name ?? '-'})`,
+  value: a.id,
+}))
 
 const unitOptions = units.map((u) => ({ label: `${u.unitNumber} (${buildings.find((b) => b.id === u.buildingId)?.name})`, value: u.id }))
 
-const fields: FieldConfig[] = [
-  { name: 'amenityName', label: 'Fasilitas', type: 'select', options: amenityNameOptions },
-  { name: 'unitId', label: 'Unit', type: 'select', options: unitOptions },
-  { name: 'bookedBy', label: 'Dipesan Oleh', type: 'text', placeholder: 'cth. Andi Wijaya' },
-  { name: 'date', label: 'Tanggal', type: 'date' },
-  { name: 'timeSlot', label: 'Slot Waktu', type: 'text', placeholder: 'cth. 07:00 - 08:00' },
-  { name: 'status', label: 'Status', type: 'select', options: statusOptions },
-]
-
 const emptyValues: FormValues = {
-  amenityName: amenityNameOptions[0]?.value ?? '',
+  amenityId: amenityOptions[0]?.value ?? '',
   unitId: unitOptions[0]?.value ?? '',
   bookedBy: '',
   date: '',
@@ -49,17 +38,69 @@ export default function Amenities() {
   const [amenityBookings, setAmenityBookings] = useState<AmenityBooking[]>(initialAmenityBookings)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<AmenityBooking | null>(null)
+  // Tracks the amenity currently selected inside the open form dialog, so timeSlot
+  // options can be regenerated reactively from that amenity's operating hours/slot duration.
+  const [formAmenityId, setFormAmenityId] = useState<string>(amenityOptions[0]?.value ?? '')
 
   const confirmedCount = amenityBookings.filter((a) => a.status === 'confirmed').length
   const pendingCount = amenityBookings.filter((a) => a.status === 'pending').length
 
+  function amenityName(id: string) {
+    return amenities.find((a) => a.id === id)?.name ?? '-'
+  }
+
+  /** How many active (non-cancelled) bookings already occupy this amenity+date+slot. */
+  function bookedCount(amenityId: string, date: string, timeSlot: string, excludeId?: string) {
+    return amenityBookings.filter(
+      (b) =>
+        b.amenityId === amenityId &&
+        b.date === date &&
+        b.timeSlot === timeSlot &&
+        b.status !== 'cancelled' &&
+        b.id !== excludeId,
+    ).length
+  }
+
+  function quotaFor(amenityId: string) {
+    return amenities.find((a) => a.id === amenityId)?.capacityPerSlot ?? 0
+  }
+
+  const timeSlotOptions = useMemo(() => {
+    const amenity = amenities.find((a) => a.id === formAmenityId)
+    if (!amenity) return []
+    return generateTimeSlots(amenity.operatingHoursStart, amenity.operatingHoursEnd, amenity.slotDurationMinutes).map(
+      (slot) => ({ label: slot, value: slot }),
+    )
+  }, [formAmenityId])
+
+  const fields: FieldConfig[] = [
+    {
+      name: 'amenityId',
+      label: 'Fasilitas',
+      type: 'select',
+      options: amenityOptions,
+    },
+    { name: 'unitId', label: 'Unit', type: 'select', options: unitOptions },
+    { name: 'bookedBy', label: 'Dipesan Oleh', type: 'text', placeholder: 'cth. Andi Wijaya' },
+    { name: 'date', label: 'Tanggal', type: 'date' },
+    {
+      name: 'timeSlot',
+      label: 'Slot Waktu',
+      type: 'select',
+      options: timeSlotOptions.length > 0 ? timeSlotOptions : [{ label: 'Pilih fasilitas dahulu', value: '' }],
+    },
+    { name: 'status', label: 'Status', type: 'select', options: statusOptions },
+  ]
+
   function openAdd() {
     setEditing(null)
+    setFormAmenityId(amenityOptions[0]?.value ?? '')
     setDialogOpen(true)
   }
 
   function openEdit(booking: AmenityBooking) {
     setEditing(booking)
+    setFormAmenityId(booking.amenityId)
     setDialogOpen(true)
   }
 
@@ -69,14 +110,31 @@ export default function Amenities() {
 
   function handleSubmit(values: FormValues) {
     const unit = units.find((u) => u.id === String(values.unitId))
+    const amenityId = String(values.amenityId)
+    const date = String(values.date)
+    const timeSlot = String(values.timeSlot)
+    const status = values.status as AmenityBookingStatus
+
+    if (status !== 'cancelled') {
+      const already = bookedCount(amenityId, date, timeSlot, editing?.id)
+      const quota = quotaFor(amenityId)
+      if (already >= quota) {
+        window.alert(
+          `Kuota penuh untuk ${amenityName(amenityId)} pada ${formatDate(date)} slot ${timeSlot}. ` +
+            `(${already}/${quota} sudah terisi). Reservasi tidak disimpan.`,
+        )
+        return
+      }
+    }
+
     const payload = {
-      amenityName: String(values.amenityName),
+      amenityId,
       unitId: String(values.unitId),
       buildingId: unit?.buildingId ?? '',
       bookedBy: String(values.bookedBy),
-      date: String(values.date),
-      timeSlot: String(values.timeSlot),
-      status: values.status as AmenityBookingStatus,
+      date,
+      timeSlot,
+      status,
     }
     if (editing) {
       setAmenityBookings((prev) => prev.map((a) => (a.id === editing.id ? { ...a, ...payload } : a)))
@@ -92,9 +150,10 @@ export default function Amenities() {
       accessorFn: (row) => buildings.find((b) => b.id === row.buildingId)?.name ?? '-',
     },
     {
-      accessorKey: 'amenityName',
+      id: 'amenityName',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Fasilitas" />,
-      cell: ({ row }) => <span className="font-medium">{row.original.amenityName}</span>,
+      accessorFn: (row) => amenityName(row.amenityId),
+      cell: ({ row }) => <span className="font-medium">{amenityName(row.original.amenityId)}</span>,
     },
     {
       id: 'unit',
@@ -115,6 +174,19 @@ export default function Amenities() {
       header: 'Slot Waktu',
     },
     {
+      id: 'quota',
+      header: 'Kuota Slot',
+      cell: ({ row }) => {
+        const quota = quotaFor(row.original.amenityId)
+        const used = bookedCount(row.original.amenityId, row.original.date, row.original.timeSlot)
+        return (
+          <span className={used >= quota ? 'text-destructive font-medium' : 'text-muted-foreground'}>
+            {used} dari {quota} slot terisi
+          </span>
+        )
+      },
+    },
+    {
       accessorKey: 'status',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
       cell: ({ row }) => (
@@ -129,7 +201,7 @@ export default function Amenities() {
         <RowActions
           onEdit={() => openEdit(row.original)}
           onDelete={() => handleDelete(row.original.id)}
-          deleteLabel={`Reservasi ${row.original.amenityName} oleh ${row.original.bookedBy} akan dihapus dari sistem.`}
+          deleteLabel={`Reservasi ${amenityName(row.original.amenityId)} oleh ${row.original.bookedBy} akan dihapus dari sistem.`}
         />
       ),
     },
@@ -140,7 +212,7 @@ export default function Amenities() {
       <div>
         <h1 className="text-2xl font-semibold">Amenity Booking</h1>
         <p className="text-sm text-muted-foreground">
-          Reservasi fasilitas bersama: kolam renang, gym, function hall, BBQ area.
+          Reservasi fasilitas bersama sesuai jadwal, jam operasional, dan kuota yang diatur di Pengaturan Fasilitas.
         </p>
       </div>
 
@@ -162,7 +234,7 @@ export default function Amenities() {
       <Card>
         <CardHeader>
           <CardTitle>Daftar Reservasi</CardTitle>
-          <CardDescription>Jadwal penggunaan fasilitas bersama per tower</CardDescription>
+          <CardDescription>Jadwal penggunaan fasilitas bersama per tower, lengkap dengan sisa kuota per slot</CardDescription>
         </CardHeader>
         <CardContent>
           <DataTable
@@ -178,25 +250,29 @@ export default function Amenities() {
       </Card>
 
       <FormDialog
+        key={editing?.id ?? 'new'}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         title={editing ? 'Edit Reservasi' : 'Tambah Reservasi'}
-        description="Lengkapi data reservasi fasilitas"
+        description="Lengkapi data reservasi fasilitas. Slot waktu mengikuti jam operasional & durasi slot fasilitas terpilih."
         fields={fields}
         defaultValues={
           editing
             ? {
-                amenityName: editing.amenityName,
+                amenityId: editing.amenityId,
                 unitId: editing.unitId,
                 bookedBy: editing.bookedBy,
                 date: editing.date,
                 timeSlot: editing.timeSlot,
                 status: editing.status,
               }
-            : emptyValues
+            : { ...emptyValues, amenityId: formAmenityId }
         }
         onSubmit={handleSubmit}
         submitLabel={editing ? 'Simpan Perubahan' : 'Tambah'}
+        onFieldChange={(name, value) => {
+          if (name === 'amenityId') setFormAmenityId(String(value))
+        }}
       />
     </div>
   )

@@ -13,6 +13,9 @@ export type ParkingVehicleType = 'car' | 'motorcycle'
 export type ParkingSlotStatus = 'occupied' | 'available' | 'reserved'
 export type ParkingUserType = 'resident' | 'visitor'
 export type AmenityBookingStatus = 'confirmed' | 'pending' | 'cancelled'
+export type AmenityCategory = 'olahraga' | 'rekreasi' | 'acara' | 'kerja' | 'lainnya'
+export type AmenityStatus = 'active' | 'inactive'
+export type AmenityAudience = 'all' | 'single_building'
 export type ComplaintCategory = 'hvac' | 'plumbing' | 'electrical' | 'security' | 'cleanliness' | 'noise' | 'other'
 export type ComplaintStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
 export type ComplaintPriority = 'low' | 'medium' | 'high' | 'urgent'
@@ -171,10 +174,24 @@ export interface ParkingSlot {
   vehiclePlate?: string
 }
 
+export interface Amenity {
+  id: string
+  /** 'all' = shared facility usable by every tower; otherwise scoped to one building. */
+  audience: AmenityAudience
+  buildingId?: string
+  name: string
+  category: AmenityCategory
+  operatingHoursStart: string
+  operatingHoursEnd: string
+  slotDurationMinutes: number
+  capacityPerSlot: number
+  status: AmenityStatus
+}
+
 export interface AmenityBooking {
   id: string
   buildingId: string
-  amenityName: string
+  amenityId: string
   unitId: string
   bookedBy: string
   date: string

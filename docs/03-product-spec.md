@@ -26,7 +26,8 @@ tanpa backend nyata (semua data adalah mock data lokal di `src/data/mock.ts`).
 | Billing & Iuran | `/billing` | Invoice IPL & utilitas, status lunas/jatuh tempo/tertunggak |
 | Visitor Management | `/visitors` | Log tamu masuk/keluar, keperluan, kendaraan |
 | Parking | `/parking` | Status slot parkir mobil/motor, kendaraan terdaftar |
-| Amenity Booking | `/amenities` | Reservasi kolam renang, gym, function hall, BBQ area |
+| Amenity Booking | `/amenities` | Reservasi kolam renang, gym, function hall, BBQ area, dll. dengan kuota & slot waktu otomatis |
+| Pengaturan Fasilitas | `/amenities/settings` | Master data fasilitas: jam operasional, durasi slot, kuota per slot, cakupan tower (Request #6) |
 | Keluhan & Tiket | `/complaints` | Tiket keluhan penghuni dengan prioritas & status |
 | Pengumuman | `/announcements` | Broadcast info ke seluruh kompleks atau per tower |
 
@@ -136,6 +137,38 @@ sudah ada (tanpa ledger/tabel baru), konsisten dengan pola yang ada:
   & badge di `lib/status.ts` (`parkingUserTypeLabel`/`parkingUserTypeVariant`),
   kolom badge dan faceted filter "Jenis Pengguna" di tabel slot parkir, serta
   field pilihan pada form Tambah/Edit Slot Parkir.
+
+## Reservasi Fasilitas: Master Data, Jadwal & Kuota (ditambahkan di Request #6)
+
+Sebelumnya Amenity Booking hanya berupa teks bebas tanpa kuota. Sekarang
+reservasi fasilitas memiliki master data dan penegakan kuota:
+
+- **Master fasilitas (`Amenity`)** — dikelola di halaman baru **Pengaturan
+  Fasilitas** (`/amenities/settings`), berisi nama, kategori, cakupan
+  (`audience: 'all'` untuk fasilitas bersama semua tower, atau
+  `single_building` + `buildingId` untuk fasilitas spesifik satu tower —
+  meniru pola `AnnouncementAudience`), jam operasional (`operatingHoursStart`/
+  `operatingHoursEnd`), durasi slot (`slotDurationMinutes`), kuota per slot
+  (`capacityPerSlot`), dan status aktif/nonaktif (mis. ditutup untuk
+  maintenance). CRUD penuh dengan DataTable/FormDialog/RowActions seperti
+  modul lain. Mock data mencakup 8 fasilitas contoh: Kolam Renang, Gym,
+  Function Hall, BBQ Area, Sky Lounge, Co-working Space, Perpustakaan, dan
+  Meja Biliard.
+- **Booking terhubung ke master fasilitas** — `AmenityBooking.amenityId`
+  (FK ke `Amenity`) menggantikan nama fasilitas bebas teks. Form booking di
+  `/amenities` hanya menampilkan fasilitas yang `status: 'active'`.
+- **Slot waktu dinamis** — opsi slot waktu pada form booking diturunkan
+  otomatis dari jam operasional & durasi slot fasilitas yang dipilih, via
+  `generateTimeSlots()` di `lib/format.ts`. `FormDialog` mendapat hook
+  generik baru `onFieldChange` agar halaman pemanggil bisa membangun field
+  select yang nilainya bergantung pada field lain, tanpa mengubah arsitektur
+  form yang sudah ada.
+- **Penegakan kuota** — submit booking (tambah/edit) memeriksa jumlah
+  booking aktif (bukan `cancelled`) pada kombinasi fasilitas + tanggal +
+  slot yang sama; jika sudah mencapai `capacityPerSlot`, submit diblokir
+  dengan peringatan. Kolom "Kuota Slot" pada tabel reservasi menampilkan
+  pemakaian real-time (mis. "2 dari 4 slot terisi"). Tidak ada penyelesaian
+  konflik di luar penghitungan sinkron terhadap state lokal (tanpa backend).
 
 ## Tech Stack
 - React 19 + TypeScript + Vite

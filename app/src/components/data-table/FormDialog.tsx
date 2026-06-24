@@ -46,6 +46,8 @@ interface FormDialogProps {
   defaultValues: FormValues
   onSubmit: (values: FormValues) => void
   submitLabel?: string
+  /** Optional hook fired whenever any field changes, useful for deriving dynamic options (e.g. dependent select fields) in the parent. */
+  onFieldChange?: (name: string, value: string | boolean, values: FormValues) => void
 }
 
 function validateField(field: FieldConfig, rawValue: string | number | boolean): string | null {
@@ -80,6 +82,7 @@ export function FormDialog({
   defaultValues,
   onSubmit,
   submitLabel = 'Simpan',
+  onFieldChange,
 }: FormDialogProps) {
   const [values, setValues] = useState<FormValues>(defaultValues)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -93,7 +96,11 @@ export function FormDialog({
   }, [open, JSON.stringify(defaultValues)])
 
   function handleChange(name: string, value: string | boolean) {
-    setValues((prev) => ({ ...prev, [name]: value }))
+    setValues((prev) => {
+      const next = { ...prev, [name]: value }
+      onFieldChange?.(name, value, next)
+      return next
+    })
     if (errors[name]) {
       setErrors((prev) => {
         const next = { ...prev }

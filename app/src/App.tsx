@@ -13,6 +13,7 @@ import Billing from '@/pages/Billing'
 import Visitors from '@/pages/Visitors'
 import Parking from '@/pages/Parking'
 import Amenities from '@/pages/Amenities'
+import AmenitySettings from '@/pages/AmenitySettings'
 import Complaints from '@/pages/Complaints'
 import Announcements from '@/pages/Announcements'
 import Leases from '@/pages/Leases'
@@ -35,6 +36,7 @@ function App() {
           <Route path="/visitors" element={<Visitors />} />
           <Route path="/parking" element={<Parking />} />
           <Route path="/amenities" element={<Amenities />} />
+          <Route path="/amenities/settings" element={<AmenitySettings />} />
           <Route path="/complaints" element={<Complaints />} />
           <Route path="/announcements" element={<Announcements />} />
           <Route path="/leases" element={<Leases />} />

@@ -41,3 +41,31 @@ export function calculateOutstandingBalance(
     .filter((invoice) => invoice.unitId === unitId && invoice.status !== 'paid')
     .reduce((sum, invoice) => sum + invoice.amount, 0)
 }
+
+/**
+ * Generate "HH:MM - HH:MM" time slot options between operating hours, split into
+ * fixed-length blocks of `slotDurationMinutes`. Trailing partial blocks are dropped.
+ */
+export function generateTimeSlots(
+  operatingHoursStart: string,
+  operatingHoursEnd: string,
+  slotDurationMinutes: number,
+): string[] {
+  const toMinutes = (hhmm: string) => {
+    const [h, m] = hhmm.split(':').map(Number)
+    return (h ?? 0) * 60 + (m ?? 0)
+  }
+  const toHHMM = (totalMinutes: number) => {
+    const h = Math.floor(totalMinutes / 60) % 24
+    const m = totalMinutes % 60
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+  }
+  const start = toMinutes(operatingHoursStart)
+  const end = toMinutes(operatingHoursEnd)
+  const duration = slotDurationMinutes > 0 ? slotDurationMinutes : 60
+  const slots: string[] = []
+  for (let t = start; t + duration <= end; t += duration) {
+    slots.push(`${toHHMM(t)} - ${toHHMM(t + duration)}`)
+  }
+  return slots
+}

@@ -10,6 +10,8 @@ import type {
   ParkingSlotStatus,
   ParkingUserType,
   AmenityBookingStatus,
+  AmenityCategory,
+  AmenityStatus,
   ComplaintStatus,
   ComplaintPriority,
   LeaseStatus,
@@ -142,6 +144,24 @@ export const amenityStatusVariant: Record<AmenityBookingStatus, 'default' | 'sec
   confirmed: 'secondary',
   pending: 'outline',
   cancelled: 'destructive',
+}
+
+export const amenityFacilityStatusLabel: Record<AmenityStatus, string> = {
+  active: 'Aktif',
+  inactive: 'Tidak Aktif (Maintenance)',
+}
+
+export const amenityFacilityStatusVariant: Record<AmenityStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  active: 'secondary',
+  inactive: 'destructive',
+}
+
+export const amenityCategoryLabel: Record<AmenityCategory, string> = {
+  olahraga: 'Olahraga',
+  rekreasi: 'Rekreasi',
+  acara: 'Acara',
+  kerja: 'Ruang Kerja',
+  lainnya: 'Lainnya',
 }
 
 export const complaintStatusLabel: Record<ComplaintStatus, string> = {
