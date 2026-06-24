@@ -119,11 +119,10 @@ export default function Amenities() {
       const already = bookedCount(amenityId, date, timeSlot, editing?.id)
       const quota = quotaFor(amenityId)
       if (already >= quota) {
-        window.alert(
-          `Kuota penuh untuk ${amenityName(amenityId)} pada ${formatDate(date)} slot ${timeSlot}. ` +
-            `(${already}/${quota} sudah terisi). Reservasi tidak disimpan.`,
+        return (
+          `Kuota penuh untuk ${amenityName(amenityId)} pada ${formatDate(date)} slot ${timeSlot} ` +
+          `(${already}/${quota} sudah terisi). Pilih slot atau tanggal lain.`
         )
-        return
       }
     }
 

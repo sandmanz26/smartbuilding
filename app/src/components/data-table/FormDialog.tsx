@@ -44,7 +44,8 @@ interface FormDialogProps {
   description?: string
   fields: FieldConfig[]
   defaultValues: FormValues
-  onSubmit: (values: FormValues) => void
+  /** Return an error message string to keep the dialog open and show it; return void/undefined to submit successfully. */
+  onSubmit: (values: FormValues) => string | void
   submitLabel?: string
   /** Optional hook fired whenever any field changes, useful for deriving dynamic options (e.g. dependent select fields) in the parent. */
   onFieldChange?: (name: string, value: string | boolean, values: FormValues) => void
@@ -86,11 +87,13 @@ export function FormDialog({
 }: FormDialogProps) {
   const [values, setValues] = useState<FormValues>(defaultValues)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [formError, setFormError] = useState<string | null>(null)
 
   useEffect(() => {
     if (open) {
       setValues(defaultValues)
       setErrors({})
+      setFormError(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, JSON.stringify(defaultValues)])
@@ -101,6 +104,7 @@ export function FormDialog({
       onFieldChange?.(name, value, next)
       return next
     })
+    setFormError(null)
     if (errors[name]) {
       setErrors((prev) => {
         const next = { ...prev }
@@ -120,7 +124,11 @@ export function FormDialog({
       setErrors(nextErrors)
       return
     }
-    onSubmit(values)
+    const result = onSubmit(values)
+    if (result) {
+      setFormError(result)
+      return
+    }
     onOpenChange(false)
   }
 
@@ -132,6 +140,11 @@ export function FormDialog({
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         <div className="grid gap-4 py-2">
+          {formError && (
+            <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {formError}
+            </div>
+          )}
           {fields.map((field) => (
             <div key={field.name} className="grid gap-1.5">
               {isBooleanField(field) ? (
