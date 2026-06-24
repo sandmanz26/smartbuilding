@@ -33,6 +33,7 @@ export const buildings: Building[] = [
     energyBudgetKwh: 9500,
     activeAlarms: 3,
     status: 'warning',
+    petsAllowed: true,
   },
   {
     id: 'bld-02',
@@ -46,6 +47,7 @@ export const buildings: Building[] = [
     energyBudgetKwh: 6000,
     activeAlarms: 0,
     status: 'normal',
+    petsAllowed: false,
   },
   {
     id: 'bld-03',
@@ -59,6 +61,7 @@ export const buildings: Building[] = [
     energyBudgetKwh: 3500,
     activeAlarms: 1,
     status: 'fault',
+    petsAllowed: true,
   },
 ]
 
@@ -132,13 +135,14 @@ export const users: SystemUser[] = [
 ]
 
 export const units: Unit[] = [
-  { id: 'unt-01', buildingId: 'bld-01', unitNumber: 'A-1205', floor: 12, type: '2BR', areaSqm: 65, status: 'occupied_owner', ownerName: 'Andi Wijaya', phone: '0812-1111-2222' },
-  { id: 'unt-02', buildingId: 'bld-01', unitNumber: 'A-1206', floor: 12, type: '2BR', areaSqm: 65, status: 'occupied_tenant', ownerName: 'Lina Marpaung', tenantName: 'Reza Pratama', phone: '0813-2222-3333' },
-  { id: 'unt-03', buildingId: 'bld-01', unitNumber: 'A-2001', floor: 20, type: '3BR Executive', areaSqm: 110, status: 'occupied_owner', ownerName: 'Hendra Gunawan', phone: '0811-3333-4444' },
-  { id: 'unt-04', buildingId: 'bld-01', unitNumber: 'A-0501', floor: 5, type: 'Studio', areaSqm: 32, status: 'vacant', ownerName: 'Developer (Inventory)', phone: '-' },
-  { id: 'unt-05', buildingId: 'bld-02', unitNumber: 'B-0805', floor: 8, type: '1BR', areaSqm: 45, status: 'occupied_tenant', ownerName: 'Maria Susanti', tenantName: 'Kevin Tanaka', phone: '0815-4444-5555' },
-  { id: 'unt-06', buildingId: 'bld-02', unitNumber: 'B-0806', floor: 8, type: '1BR', areaSqm: 45, status: 'for_sale', ownerName: 'Developer (Inventory)', phone: '-' },
-  { id: 'unt-07', buildingId: 'bld-03', unitNumber: 'C-0101', floor: 1, type: '2BR', areaSqm: 60, status: 'occupied_owner', ownerName: 'Dewi Anggraini', phone: '0816-5555-6666' },
+  { id: 'unt-01', buildingId: 'bld-01', unitNumber: 'A-1205', floor: 12, type: '2BR', areaSqm: 65, status: 'occupied_owner', isListedForSale: false, ownerName: 'Andi Wijaya', phone: '0812-1111-2222', hasPet: true, parkingQuota: 1 },
+  { id: 'unt-02', buildingId: 'bld-01', unitNumber: 'A-1206', floor: 12, type: '2BR', areaSqm: 65, status: 'occupied_tenant', isListedForSale: false, ownerName: 'Lina Marpaung', tenantName: 'Reza Pratama', phone: '0813-2222-3333', hasPet: false, parkingQuota: 1 },
+  { id: 'unt-03', buildingId: 'bld-01', unitNumber: 'A-2001', floor: 20, type: '3BR Executive', areaSqm: 110, status: 'occupied_owner', isListedForSale: false, ownerName: 'Hendra Gunawan', phone: '0811-3333-4444', hasPet: false, parkingQuota: 2 },
+  { id: 'unt-04', buildingId: 'bld-01', unitNumber: 'A-0501', floor: 5, type: 'Studio', areaSqm: 32, status: 'vacant', isListedForSale: false, ownerName: 'Developer (Inventory)', phone: '-', hasPet: false, parkingQuota: 1 },
+  { id: 'unt-05', buildingId: 'bld-02', unitNumber: 'B-0805', floor: 8, type: '1BR', areaSqm: 45, status: 'occupied_tenant', isListedForSale: false, ownerName: 'Maria Susanti', tenantName: 'Kevin Tanaka', phone: '0815-4444-5555', hasPet: false, parkingQuota: 1 },
+  { id: 'unt-06', buildingId: 'bld-02', unitNumber: 'B-0806', floor: 8, type: '1BR', areaSqm: 45, status: 'vacant', isListedForSale: true, ownerName: 'Budiman Halim', phone: '0814-7777-8888', hasPet: false, parkingQuota: 1 },
+  { id: 'unt-07', buildingId: 'bld-03', unitNumber: 'C-0101', floor: 1, type: '2BR', areaSqm: 60, status: 'occupied_owner', isListedForSale: false, ownerName: 'Dewi Anggraini', phone: '0816-5555-6666', hasPet: true, parkingQuota: 2 },
+  { id: 'unt-08', buildingId: 'bld-01', unitNumber: 'A-1501', floor: 15, type: '3BR Executive', areaSqm: 110, status: 'vacant', isListedForSale: true, ownerName: 'Sutanto Wijaya', phone: '0819-9999-0000', hasPet: false, parkingQuota: 2 },
 ]
 
 export const invoices: Invoice[] = [
@@ -157,13 +161,15 @@ export const visitors: Visitor[] = [
 ]
 
 export const parkingSlots: ParkingSlot[] = [
-  { id: 'prk-01', buildingId: 'bld-01', slotCode: 'B1-A01', level: 'Basement 1', vehicleType: 'car', status: 'occupied', unitId: 'unt-01', vehiclePlate: 'B 1001 AGW' },
-  { id: 'prk-02', buildingId: 'bld-01', slotCode: 'B1-A02', level: 'Basement 1', vehicleType: 'car', status: 'available' },
-  { id: 'prk-03', buildingId: 'bld-01', slotCode: 'B1-A03', level: 'Basement 1', vehicleType: 'car', status: 'reserved', unitId: 'unt-03' },
-  { id: 'prk-04', buildingId: 'bld-01', slotCode: 'B2-M10', level: 'Basement 2 (Motor)', vehicleType: 'motorcycle', status: 'occupied', unitId: 'unt-02', vehiclePlate: 'B 2002 PQR' },
-  { id: 'prk-05', buildingId: 'bld-02', slotCode: 'B1-B05', level: 'Basement 1', vehicleType: 'car', status: 'occupied', unitId: 'unt-05', vehiclePlate: 'B 3003 LMN' },
-  { id: 'prk-06', buildingId: 'bld-02', slotCode: 'B1-B06', level: 'Basement 1', vehicleType: 'car', status: 'available' },
-  { id: 'prk-07', buildingId: 'bld-03', slotCode: 'GF-C01', level: 'Ground Floor', vehicleType: 'car', status: 'available' },
+  { id: 'prk-01', buildingId: 'bld-01', slotCode: 'B1-A01', level: 'Basement 1', vehicleType: 'car', userType: 'resident', status: 'occupied', unitId: 'unt-01', vehiclePlate: 'B 1001 AGW' },
+  { id: 'prk-02', buildingId: 'bld-01', slotCode: 'B1-A02', level: 'Basement 1', vehicleType: 'car', userType: 'visitor', status: 'available' },
+  { id: 'prk-03', buildingId: 'bld-01', slotCode: 'B1-A03', level: 'Basement 1', vehicleType: 'car', userType: 'resident', status: 'reserved', unitId: 'unt-03' },
+  { id: 'prk-04', buildingId: 'bld-01', slotCode: 'B2-M10', level: 'Basement 2 (Motor)', vehicleType: 'motorcycle', userType: 'resident', status: 'occupied', unitId: 'unt-02', vehiclePlate: 'B 2002 PQR' },
+  { id: 'prk-05', buildingId: 'bld-02', slotCode: 'B1-B05', level: 'Basement 1', vehicleType: 'car', userType: 'resident', status: 'occupied', unitId: 'unt-05', vehiclePlate: 'B 3003 LMN' },
+  { id: 'prk-06', buildingId: 'bld-02', slotCode: 'B1-B06', level: 'Basement 1', vehicleType: 'car', userType: 'visitor', status: 'available' },
+  { id: 'prk-07', buildingId: 'bld-03', slotCode: 'GF-C01', level: 'Ground Floor', vehicleType: 'car', userType: 'visitor', status: 'available' },
+  { id: 'prk-08', buildingId: 'bld-01', slotCode: 'B1-A04', level: 'Basement 1', vehicleType: 'car', userType: 'resident', status: 'occupied', unitId: 'unt-03', vehiclePlate: 'B 4004 XYZ' },
+  { id: 'prk-09', buildingId: 'bld-01', slotCode: 'B2-M11', level: 'Basement 2 (Motor)', vehicleType: 'motorcycle', userType: 'resident', status: 'occupied', unitId: 'unt-03', vehiclePlate: 'B 4005 XYZ' },
 ]
 
 export const amenityBookings: AmenityBooking[] = [

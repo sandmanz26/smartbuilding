@@ -19,9 +19,14 @@ export default function Buildings() {
         {buildings.map((b) => (
           <Card key={b.id}>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <CardTitle>{b.name}</CardTitle>
-                <Badge variant={statusBadgeVariant[b.status]}>{statusLabel[b.status]}</Badge>
+                <div className="flex items-center gap-1">
+                  <Badge variant={b.petsAllowed ? 'secondary' : 'outline'}>
+                    {b.petsAllowed ? 'Boleh Hewan' : 'Tidak Boleh Hewan'}
+                  </Badge>
+                  <Badge variant={statusBadgeVariant[b.status]}>{statusLabel[b.status]}</Badge>
+                </div>
               </div>
               <CardDescription>{b.address}</CardDescription>
             </CardHeader>

@@ -31,3 +31,13 @@ export function calculateLateFee(amount: number, dueDate: string): number {
   const rate = Math.min(blocks * 0.02, 0.2)
   return Math.round(amount * rate)
 }
+
+/** Outstanding IPL/invoice balance for a unit: sum of amounts for invoices not yet paid. */
+export function calculateOutstandingBalance(
+  unitId: string,
+  invoices: { unitId: string; amount: number; status: string }[],
+): number {
+  return invoices
+    .filter((invoice) => invoice.unitId === unitId && invoice.status !== 'paid')
+    .reduce((sum, invoice) => sum + invoice.amount, 0)
+}

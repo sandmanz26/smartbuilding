@@ -126,3 +126,44 @@ yang sudah ada.
 
 Tetap frontend-only, tanpa backend, konsisten dengan arsitektur mock-data dan
 pola DataTable/FormDialog/RowActions yang sudah ada.
+
+## Request #5 — 2026-06-24
+
+**Bahasa asal (Indonesia):**
+
+> harusnya ada fitur untuk untuk user dan IPL karena biasa user memiliki
+> tangungan untuk IPL. 1. selain itu harus ada informasi klo memang unit
+> tersebut sudah dibeli tapi sedang dijual, kosong belum laku 2. kemudian
+> biasanya ada apartment yang memperbolehkan hewan maka butuh setting enable
+> disable 3. kemudian masalah parkir itu juga dibutuhkan juga
+
+**Ringkasan kebutuhan & implementasi:**
+
+1. **Tunggakan IPL per unit** — kolom "Tunggakan IPL" di modul Unit yang
+   menghitung saldo tertunggak per unit secara derived dari `invoices` (semua
+   invoice dengan status bukan `paid`, dijumlahkan via `calculateOutstandingBalance`
+   di `lib/format.ts`), ditampilkan sebagai badge "Lunas" (hijau/secondary) atau
+   "Ada Tunggakan: Rp X" (destructive) — tanpa ledger terpisah, murni derived data.
+2. **Status unit dijual vs kosong biasa** — ditambahkan field `isListedForSale:
+   boolean` pada `Unit` (terpisah dari `status: UnitOccupancyStatus`) untuk
+   membedakan unit kosong biasa vs. unit yang sudah dimiliki tapi sedang
+   aktif dipasarkan/dijual dan belum laku. Disurfacekan sebagai badge tambahan
+   "Kosong Belum Laku" di kolom Status pada modul Unit, plus checkbox di
+   form Tambah/Edit Unit.
+3. **Setting pet policy per gedung** — ditambahkan field `petsAllowed: boolean`
+   pada `Building`. Disurfacekan sebagai badge "Boleh Hewan"/"Tidak Boleh
+   Hewan" pada setiap card gedung di modul Gedung & Lantai. Unit individual juga
+   memiliki field `hasPet: boolean` (penghuni memelihara hewan), ditampilkan
+   sebagai badge di modul Unit.
+4. **Kuota parkir per unit** — ditambahkan field `parkingQuota: number` pada
+   `Unit` (default 1 untuk unit Studio/1BR/2BR, 2 untuk unit besar seperti
+   3BR Executive). Modul Parking kini menampilkan tabel "Kuota Parkir per
+   Unit" yang membandingkan jumlah slot parkir terpakai (dihitung dari
+   `parkingSlots` yang `unitId`-nya cocok) terhadap kuota per unit, dengan
+   badge status "Sesuai Kuota" / "Lebih Kuota" / "Belum Ada Slot", plus dua
+   KPI card ringkasan ("Unit Lebih Kuota", "Unit Belum Ada Slot").
+
+Tetap frontend-only, tanpa backend, derived dari mock data yang sudah ada
+(tidak membuat ledger/ relasi data baru di luar yang diperlukan), konsisten
+dengan pola DataTable/FormDialog/RowActions dan `lib/status.ts` /
+`lib/format.ts` yang sudah ada.

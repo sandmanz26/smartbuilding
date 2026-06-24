@@ -2,13 +2,14 @@ import { useState } from 'react'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DataTable } from '@/components/data-table/DataTable'
 import { DataTableColumnHeader } from '@/components/data-table/DataTableColumnHeader'
 import { RowActions } from '@/components/data-table/RowActions'
 import { FormDialog, type FieldConfig, type FormValues } from '@/components/data-table/FormDialog'
 import { buildings, units, invoices as initialInvoices } from '@/data/mock'
 import { invoiceStatusLabel, invoiceStatusVariant } from '@/lib/status'
-import { formatRupiah, formatDate, calculateLateFee, daysUntil } from '@/lib/format'
+import { formatRupiah, formatDate, calculateLateFee, daysUntil, calculateOutstandingBalance } from '@/lib/format'
 import type { Invoice, InvoiceStatus } from '@/types'
 
 const statusOptions = (Object.keys(invoiceStatusLabel) as InvoiceStatus[]).map((s) => ({
@@ -50,6 +51,14 @@ export default function Billing() {
   const totalLateFees = invoices
     .filter((i) => i.status === 'overdue')
     .reduce((sum, i) => sum + calculateLateFee(i.amount, i.dueDate), 0)
+
+  const tunggakanPerUnit = units
+    .map((unit) => ({
+      unit,
+      balance: calculateOutstandingBalance(unit.id, invoices),
+    }))
+    .filter((row) => row.balance > 0)
+    .sort((a, b) => b.balance - a.balance)
 
   function agingBucket(invoice: Invoice): string {
     if (invoice.status !== 'overdue') return '-'
@@ -206,6 +215,41 @@ export default function Billing() {
           <CardContent><div className="text-2xl font-bold">{formatRupiah(totalLateFees)}</div></CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Tunggakan IPL per Unit</CardTitle>
+          <CardDescription>Ringkasan saldo tertunggak (status belum lunas) per unit</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {tunggakanPerUnit.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Tidak ada unit dengan tunggakan IPL.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Unit</TableHead>
+                  <TableHead>Tower</TableHead>
+                  <TableHead>Pemilik</TableHead>
+                  <TableHead>Total Tunggakan</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {tunggakanPerUnit.map(({ unit, balance }) => (
+                  <TableRow key={unit.id}>
+                    <TableCell className="font-medium">{unit.unitNumber}</TableCell>
+                    <TableCell>{buildings.find((b) => b.id === unit.buildingId)?.name ?? '-'}</TableCell>
+                    <TableCell>{unit.ownerName}</TableCell>
+                    <TableCell>
+                      <Badge variant="destructive">{formatRupiah(balance)}</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

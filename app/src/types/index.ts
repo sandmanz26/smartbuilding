@@ -11,6 +11,7 @@ export type InvoiceStatus = 'paid' | 'due' | 'overdue'
 export type VisitorStatus = 'checked_in' | 'checked_out' | 'expected'
 export type ParkingVehicleType = 'car' | 'motorcycle'
 export type ParkingSlotStatus = 'occupied' | 'available' | 'reserved'
+export type ParkingUserType = 'resident' | 'visitor'
 export type AmenityBookingStatus = 'confirmed' | 'pending' | 'cancelled'
 export type ComplaintCategory = 'hvac' | 'plumbing' | 'electrical' | 'security' | 'cleanliness' | 'noise' | 'other'
 export type ComplaintStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
@@ -34,6 +35,7 @@ export interface Building {
   energyBudgetKwh: number
   activeAlarms: number
   status: SystemStatus
+  petsAllowed: boolean
 }
 
 export interface Floor {
@@ -126,9 +128,12 @@ export interface Unit {
   type: string
   areaSqm: number
   status: UnitOccupancyStatus
+  isListedForSale: boolean
   ownerName: string
   tenantName?: string
   phone: string
+  hasPet: boolean
+  parkingQuota: number
 }
 
 export interface Invoice {
@@ -160,6 +165,7 @@ export interface ParkingSlot {
   slotCode: string
   level: string
   vehicleType: ParkingVehicleType
+  userType: ParkingUserType
   status: ParkingSlotStatus
   unitId?: string
   vehiclePlate?: string

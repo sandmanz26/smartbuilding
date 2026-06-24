@@ -8,6 +8,7 @@ import type {
   InvoiceStatus,
   VisitorStatus,
   ParkingSlotStatus,
+  ParkingUserType,
   AmenityBookingStatus,
   ComplaintStatus,
   ComplaintPriority,
@@ -119,6 +120,16 @@ export const parkingStatusVariant: Record<ParkingSlotStatus, 'default' | 'second
   occupied: 'secondary',
   available: 'outline',
   reserved: 'outline',
+}
+
+export const parkingUserTypeLabel: Record<ParkingUserType, string> = {
+  resident: 'Penghuni',
+  visitor: 'Tamu',
+}
+
+export const parkingUserTypeVariant: Record<ParkingUserType, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  resident: 'secondary',
+  visitor: 'outline',
 }
 
 export const amenityStatusLabel: Record<AmenityBookingStatus, string> = {

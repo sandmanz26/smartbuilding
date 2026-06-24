@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -32,8 +33,9 @@ export type FieldConfig =
   | (BaseFieldConfig & { type: 'text' | 'number' | 'date' | 'datetime' })
   | (BaseFieldConfig & { type: 'textarea' })
   | (BaseFieldConfig & { type: 'select'; options: { label: string; value: string }[] })
+  | (BaseFieldConfig & { type: 'boolean' })
 
-export type FormValues = Record<string, string | number>
+export type FormValues = Record<string, string | number | boolean>
 
 interface FormDialogProps {
   open: boolean
@@ -46,7 +48,8 @@ interface FormDialogProps {
   submitLabel?: string
 }
 
-function validateField(field: FieldConfig, rawValue: string | number): string | null {
+function validateField(field: FieldConfig, rawValue: string | number | boolean): string | null {
+  if (field.type === 'boolean') return null
   const value = String(rawValue ?? '').trim()
   if (field.required !== false && value === '') {
     return 'Wajib diisi.'
@@ -62,6 +65,10 @@ function validateField(field: FieldConfig, rawValue: string | number): string | 
     if (Number.isNaN(new Date(value).getTime())) return 'Tanggal tidak valid.'
   }
   return null
+}
+
+function isBooleanField(field: FieldConfig): field is BaseFieldConfig & { type: 'boolean' } {
+  return field.type === 'boolean'
 }
 
 export function FormDialog({
@@ -85,7 +92,7 @@ export function FormDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, JSON.stringify(defaultValues)])
 
-  function handleChange(name: string, value: string) {
+  function handleChange(name: string, value: string | boolean) {
     setValues((prev) => ({ ...prev, [name]: value }))
     if (errors[name]) {
       setErrors((prev) => {
@@ -120,46 +127,59 @@ export function FormDialog({
         <div className="grid gap-4 py-2">
           {fields.map((field) => (
             <div key={field.name} className="grid gap-1.5">
-              <Label htmlFor={field.name}>
-                {field.label}
-                {field.required !== false && <span className="text-destructive"> *</span>}
-              </Label>
-              {field.type === 'select' ? (
-                <Select
-                  value={String(values[field.name] ?? '')}
-                  onValueChange={(v) => handleChange(field.name, v)}
-                >
-                  <SelectTrigger id={field.name} aria-invalid={!!errors[field.name]}>
-                    <SelectValue placeholder={`Pilih ${field.label}`} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {field.options.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : field.type === 'textarea' ? (
-                <Textarea
-                  id={field.name}
-                  placeholder={field.placeholder}
-                  value={String(values[field.name] ?? '')}
-                  onChange={(e) => handleChange(field.name, e.target.value)}
-                  aria-invalid={!!errors[field.name]}
-                />
+              {isBooleanField(field) ? (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id={field.name}
+                    checked={Boolean(values[field.name])}
+                    onCheckedChange={(checked) => handleChange(field.name, checked === true)}
+                  />
+                  <Label htmlFor={field.name}>{field.label}</Label>
+                </div>
               ) : (
-                <Input
-                  id={field.name}
-                  type={field.type === 'datetime' ? 'datetime-local' : field.type}
-                  placeholder={field.placeholder}
-                  value={String(values[field.name] ?? '')}
-                  onChange={(e) => handleChange(field.name, e.target.value)}
-                  aria-invalid={!!errors[field.name]}
-                />
-              )}
-              {errors[field.name] && (
-                <p className="text-xs text-destructive">{errors[field.name]}</p>
+                <>
+                  <Label htmlFor={field.name}>
+                    {field.label}
+                    {field.required !== false && <span className="text-destructive"> *</span>}
+                  </Label>
+                  {field.type === 'select' ? (
+                    <Select
+                      value={String(values[field.name] ?? '')}
+                      onValueChange={(v) => handleChange(field.name, v)}
+                    >
+                      <SelectTrigger id={field.name} aria-invalid={!!errors[field.name]}>
+                        <SelectValue placeholder={`Pilih ${field.label}`} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {field.options.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : field.type === 'textarea' ? (
+                    <Textarea
+                      id={field.name}
+                      placeholder={field.placeholder}
+                      value={String(values[field.name] ?? '')}
+                      onChange={(e) => handleChange(field.name, e.target.value)}
+                      aria-invalid={!!errors[field.name]}
+                    />
+                  ) : (
+                    <Input
+                      id={field.name}
+                      type={field.type === 'datetime' ? 'datetime-local' : field.type}
+                      placeholder={field.placeholder}
+                      value={String(values[field.name] ?? '')}
+                      onChange={(e) => handleChange(field.name, e.target.value)}
+                      aria-invalid={!!errors[field.name]}
+                    />
+                  )}
+                  {errors[field.name] && (
+                    <p className="text-xs text-destructive">{errors[field.name]}</p>
+                  )}
+                </>
               )}
             </div>
           ))}

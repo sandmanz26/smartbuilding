@@ -18,6 +18,7 @@ import {
 import { units as initialUnits, buildings, leases, invoices } from '@/data/mock';
 import type { Unit, UnitOccupancyStatus } from '@/types';
 import { unitStatusLabel, unitStatusVariant } from '@/lib/status';
+import { formatRupiah, calculateOutstandingBalance } from '@/lib/format';
 import type { ColumnDef } from '@tanstack/react-table';
 
 const buildingOptions = buildings.map((building) => ({
@@ -48,9 +49,12 @@ const fields: FieldConfig[] = [
     type: 'select',
     options: statusOptions,
   },
+  { name: 'isListedForSale', label: 'Sedang Dijual (Kosong Belum Laku)', type: 'boolean' },
   { name: 'ownerName', label: 'Pemilik', type: 'text' },
   { name: 'tenantName', label: 'Penyewa', type: 'text', required: false },
   { name: 'phone', label: 'Telepon', type: 'text' },
+  { name: 'hasPet', label: 'Memelihara Hewan', type: 'boolean' },
+  { name: 'parkingQuota', label: 'Kuota Parkir', type: 'number', min: 0 },
 ];
 
 function referencesFor(unitId: string): string[] {
@@ -122,6 +126,9 @@ export default function Units() {
       tenantName: row['Penyewa'] && row['Penyewa'] !== '-' ? row['Penyewa'] : undefined,
       phone: row['Telepon'] ?? '',
       status: 'vacant',
+      isListedForSale: false,
+      hasPet: false,
+      parkingQuota: 1,
     }));
     setData((prev) => [...imported, ...prev]);
   }
@@ -139,9 +146,12 @@ export default function Units() {
                 type: String(values.type),
                 areaSqm: Number(values.areaSqm),
                 status: values.status as UnitOccupancyStatus,
+                isListedForSale: Boolean(values.isListedForSale),
                 ownerName: String(values.ownerName),
                 tenantName: values.tenantName ? String(values.tenantName) : undefined,
                 phone: String(values.phone),
+                hasPet: Boolean(values.hasPet),
+                parkingQuota: Number(values.parkingQuota) || 0,
               }
             : item,
         ),
@@ -155,9 +165,12 @@ export default function Units() {
         type: String(values.type),
         areaSqm: Number(values.areaSqm),
         status: values.status as UnitOccupancyStatus,
+        isListedForSale: Boolean(values.isListedForSale),
         ownerName: String(values.ownerName),
         tenantName: values.tenantName ? String(values.tenantName) : undefined,
         phone: String(values.phone),
+        hasPet: Boolean(values.hasPet),
+        parkingQuota: Number(values.parkingQuota) || 0,
       };
       setData((prev) => [newUnit, ...prev]);
     }
@@ -204,10 +217,35 @@ export default function Units() {
       accessorKey: 'status',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
       cell: ({ row }) => (
-        <Badge variant={unitStatusVariant[row.original.status]}>
-          {unitStatusLabel[row.original.status]}
-        </Badge>
+        <div className="flex flex-wrap gap-1">
+          <Badge variant={unitStatusVariant[row.original.status]}>
+            {unitStatusLabel[row.original.status]}
+          </Badge>
+          {row.original.isListedForSale && (
+            <Badge variant="outline">Kosong Belum Laku</Badge>
+          )}
+        </div>
       ),
+    },
+    {
+      id: 'tunggakanIpl',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Tunggakan IPL" />,
+      accessorFn: (row) => calculateOutstandingBalance(row.id, invoices),
+      cell: ({ getValue }) => {
+        const balance = getValue<number>();
+        return balance > 0 ? (
+          <Badge variant="destructive">Ada Tunggakan: {formatRupiah(balance)}</Badge>
+        ) : (
+          <Badge variant="secondary">Lunas</Badge>
+        );
+      },
+    },
+    {
+      id: 'hasPet',
+      header: 'Hewan',
+      accessorFn: (row) => row.hasPet,
+      cell: ({ row }) =>
+        row.original.hasPet ? <Badge variant="outline">Ada Hewan</Badge> : '-',
     },
     {
       id: 'actions',
@@ -342,11 +380,14 @@ export default function Units() {
                 type: editing.type,
                 areaSqm: editing.areaSqm,
                 status: editing.status,
+                isListedForSale: editing.isListedForSale,
                 ownerName: editing.ownerName,
                 tenantName: editing.tenantName ?? '',
                 phone: editing.phone,
+                hasPet: editing.hasPet,
+                parkingQuota: editing.parkingQuota,
               }
-            : {}
+            : { isListedForSale: false, hasPet: false, parkingQuota: 1 }
         }
         onSubmit={handleSubmit}
         submitLabel={editing ? 'Simpan' : 'Tambah'}

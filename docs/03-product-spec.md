@@ -104,6 +104,31 @@ duplikasi per halaman:
   keseluruhan — meniru praktik umum software IPL apartemen Indonesia dan
   fitur late-fee AppFolio/Buildium/Yardi Breeze.
 
+## IPL, Status Penjualan Unit, Pet Policy & Kuota Parkir (ditambahkan di Request #5)
+
+Empat kapabilitas residential tambahan, semuanya derived dari mock data yang
+sudah ada (tanpa ledger/tabel baru), konsisten dengan pola yang ada:
+
+- **Tunggakan IPL per unit** — modul Unit menambah kolom "Tunggakan IPL" yang
+  menghitung total invoice belum lunas (`status !== 'paid'`) per unit dari
+  `invoices`, via `calculateOutstandingBalance(unitId, invoices)` di
+  `lib/format.ts`. Ditampilkan sebagai badge "Lunas" atau "Ada Tunggakan: Rp X".
+- **Status dijual vs kosong biasa** — `Unit.isListedForSale: boolean`
+  melengkapi `Unit.status: UnitOccupancyStatus` untuk membedakan unit kosong
+  biasa dari unit yang sudah dimiliki tapi sedang aktif dipasarkan dan belum
+  laku terjual. Disurfacekan sebagai badge "Kosong Belum Laku" di kolom Status
+  modul Unit serta checkbox di form Tambah/Edit Unit.
+- **Pet policy per gedung** — `Building.petsAllowed: boolean` disurfacekan
+  sebagai badge "Boleh Hewan"/"Tidak Boleh Hewan" di card gedung pada modul
+  Gedung & Lantai. `Unit.hasPet: boolean` (penghuni unit memelihara hewan)
+  ditampilkan sebagai badge terpisah di modul Unit.
+- **Kuota parkir per unit** — `Unit.parkingQuota: number` (default 1 untuk
+  Studio/1BR/2BR, 2 untuk unit besar seperti 3BR Executive). Modul Parking
+  menambah tabel "Kuota Parkir per Unit" yang membandingkan jumlah slot
+  (`parkingSlots` dengan `unitId` cocok) terhadap kuota, dengan badge status
+  "Sesuai Kuota"/"Lebih Kuota"/"Belum Ada Slot" dan KPI card ringkasan unit
+  yang lebih kuota / belum punya slot.
+
 ## Tech Stack
 - React 19 + TypeScript + Vite
 - Tailwind CSS v4 + shadcn/ui (`new-york` style)
